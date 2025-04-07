@@ -271,6 +271,7 @@ export default function Home() {
   const [styles, setStyles] = useState<FontStyle[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast, toasts, dismissToast } = useToast();
+  const allowedVariants = ['default', 'destructive'];
   
   // Use a ref to track if we've loaded data to prevent duplicate fetches
   const dataFetched = useState(false);
@@ -513,7 +514,11 @@ export default function Home() {
         </main>
 
         {toasts.map(({ id, title, description, variant }) => (
-          <Toast key={id} variant={variant} className="bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground border border-border">
+          <Toast
+          key={id}
+          variant={allowedVariants.includes(variant ?? '') ? (variant as 'default' | 'destructive') : undefined}
+          className="bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground border border-border"
+        >
             <div className="grid gap-1">
               {title && <ToastTitle>{title}</ToastTitle>}
               {description && <ToastDescription className="text-muted-foreground">{description}</ToastDescription>}
