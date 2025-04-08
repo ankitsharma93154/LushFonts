@@ -508,6 +508,18 @@ export default function Home() {
         <link rel="dns-prefetch" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <style dangerouslySetInnerHTML={{__html: `
+    /* Critical CSS for hero section */
+    .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .md\\:text-xl { @media (min-width: 768px) { font-size: 1.25rem; line-height: 1.75rem; } }
+    .max-w-lg { max-width: 32rem; }
+    #hero-text { 
+      display: block;
+      min-height: 48px;
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0 auto;
+    }
+  `}} />
       </Head>
       <ToastProvider>
         <main className="min-h-screen py-10 px-2 pb-0 bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground">
@@ -528,10 +540,12 @@ export default function Home() {
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="text-5xl mb-4">✨📱✨</div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-4">Make Your Text Stand Out</h2>
-                <p className="text-lg md:text-xl max-w-lg">
+                <p className="text-lg md:text-xl max-w-lg"  
+                style={{minHeight: '48px', display: 'block'}} 
+                  id="hero-text">
                   Enter some text above to transform it into fancy fonts for Instagram, TikTok, social media bios, and more!
                 </p>
-                <div className="flex py-10 px-6 flex-wrap gap-3 justify-center">
+                <div className="flex py-10 px-6 flex-wrap gap-3 justify-center" >
                   {styleExamples.map((style, idx) => (
                     <div
                       key={idx}
