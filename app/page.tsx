@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense, memo, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   ToastProvider,
@@ -27,28 +26,6 @@ import {
 const FancyTextFAQ = lazy(() => import("@/components/ui/faqs"));
 const Footer = lazy(() => import("@/components/ui/footer"));
 
-// Move constants outside component to prevent re-creation on renders
-const colorOptions = {
-  // Basic colors
-  red: "#FF3B30",
-  orange: "#FF9500",
-  yellow: "#FFCC00",
-  green: "#34C759",
-  teal: "#5AC8FA",
-  blue: "#007AFF",
-  purple: "#AF52DE",
-  pink: "#FF2D55",
-  
-  // Neutral colors
-  black: "#000000",
-  white: "#FFFFFF",
-  gray: "#8E8E93",
-  
-  // Special effects
-  rainbow: "rainbow",
-  gradient: "gradient",
-  neon: "neon",
-};
 
 const emojiThemes = {
   kawaii: { prefix: "🌸", suffix: "✨", extra: "🎀" },
@@ -199,7 +176,7 @@ interface FontStyle {
   [key: string]: any; // For all character columns (A-Z, a-z, 0-9)
 }
 
-interface Toast {
+interface ToastInfo {
   id: string;
   title: string;
   description: string;
@@ -208,7 +185,7 @@ interface Toast {
 
 // Create a custom useToast hook
 const useToast = () => {
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [toasts, setToasts] = useState<ToastInfo[]>([]);
 
   const toast = ({ title, description, variant = "default" }: { title: string; description: string; variant?: string }) => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -228,12 +205,121 @@ const useToast = () => {
   };
 };
 
+// Create memoized VariationsDialog component to prevent unnecessary re-renders
+const VariationsDialog = memo(({ 
+  style, 
+  inputText, 
+  transformText,
+  copyToClipboard, 
+  shareText 
+}: { 
+  style: string;
+  inputText: string;
+  transformText: (text: string, style: string) => string;
+  copyToClipboard: (text: string) => void;
+  shareText: (text: string) => void;
+}) => {
+  // Store transformed text in a ref to avoid recalculation
+  const transformedTextRef = useRef(transformText(inputText, style));
+  const [variations, setVariations] = useState<Array<{type: string, theme: string, text: string}>>([]);
+  
+  // Generate variations only once when component mounts
+  useEffect(() => {
+    const transformedText = transformedTextRef.current;
+    const themeEntries = Object.entries(emojiThemes);
+    
+    const allVariations = themeEntries.flatMap(([theme, { prefix, suffix, extra }]) => {
+      const border = aestheticBorders[theme as keyof typeof aestheticBorders];
+      const borderleft = border.borderleft;
+      const borderright = border.borderright;
+      const symbols = border.symbols;
+      
+      return [
+        {
+          type: "Combined",
+          theme,
+          text: `${prefix} ${borderleft} ${symbols[1]} ${transformedText} ${symbols[1]} ${borderright} ${suffix}`
+        },
+        {
+          type: "Emoji",
+          theme,
+          text: `${prefix} ${transformedText} ${suffix} ${extra}`
+        },
+        {
+          type: "Border",
+          theme,
+          text: `${borderleft} ${transformedText} ${borderright}`
+        },
+        {
+          type: "Symbol",
+          theme,
+          text: `${symbols[0]} ${transformedText} ${symbols[1]}`
+        }
+      ];
+    });
+    
+    setVariations(allVariations);
+  }, [style, inputText]);
+
+  return (
+    <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto bg-gradient-to-r from-indigo-100 to-purple-100">
+      <DialogHeader>
+        <DialogTitle className="capitalize text-2xl mb-4">
+          {style.replace(/_/g, ' ')} Variations
+        </DialogTitle>
+      </DialogHeader>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+        {variations.map((variation, index) => (
+          <Card key={`${variation.type}-${variation.theme}-${index}`} className="p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-medium capitalize text text-blue-700">{variation.theme} {variation.type}</h4>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent event bubbling
+                    copyToClipboard(variation.text);
+                  }}
+                  className="h-6 w-6 p-0"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent event bubbling
+                    shareText(variation.text);
+                  }}
+                  className="h-6 w-6 p-0"
+                >
+                  <Share2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+            <p className="text-lg border-t pt-2 break-words whitespace-pre-wrap overflow-hidden w-full max-w-full">{variation.text}</p>
+          </Card>
+        ))}
+      </div>
+    </DialogContent>
+  );
+});
+
 // Memoized StyleCard component to prevent unnecessary re-renders
-const StyleCard = ({ style, transformedText, copyToClipboard, shareText }: { 
+const StyleCard = memo(({ 
+  style, 
+  transformedText, 
+  copyToClipboard, 
+  shareText,
+  onClickVariations
+}: { 
   style: string; 
   transformedText: string;
   copyToClipboard: (text: string) => void;
   shareText: (text: string) => void;
+  onClickVariations: () => void;
 }) => {
   return (
     <Card className="p-4 border border-gray-200 hover:border-gray-400 transition-colors">
@@ -244,7 +330,10 @@ const StyleCard = ({ style, transformedText, copyToClipboard, shareText }: {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => copyToClipboard(transformedText)}
+            onClick={(e) => {
+              e.stopPropagation();
+              copyToClipboard(transformedText);
+            }}
             className="h-8 w-8 p-0"
           >
             <Copy className="h-4 w-4" />
@@ -252,19 +341,28 @@ const StyleCard = ({ style, transformedText, copyToClipboard, shareText }: {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => shareText(transformedText)}
+            onClick={(e) => {
+              e.stopPropagation();
+              shareText(transformedText);
+            }}
             className="h-8 w-8 p-0"
           >
             <Share2 className="h-4 w-4" />
           </Button>
-          <DialogTrigger asChild>
-            <span className="text-3xl cursor-pointer">🎨</span>
-          </DialogTrigger>
+          <span 
+            className="text-3xl cursor-pointer" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onClickVariations();
+            }}
+          >
+            🎨
+          </span>
         </div>
       </div>
     </Card>
   );
-};
+});
 
 export default function Home() {
   const [inputText, setInputText] = useState("");
@@ -272,6 +370,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const { toast, toasts, dismissToast } = useToast();
   const allowedVariants = ['default', 'destructive'];
+  
+  // Use state to track which dialog is open
+  const [openDialogStyle, setOpenDialogStyle] = useState<string | null>(null);
   
   // Use a ref to track if we've loaded data to prevent duplicate fetches
   const dataFetched = useState(false);
@@ -352,81 +453,6 @@ export default function Home() {
     }
   }
 
-  const VariationsDialog = ({ style }: { style: string }) => {
-    const transformedText = transformText(inputText, style);
-    const themeEntries = Object.entries(emojiThemes);
-
-    // Create the variations more efficiently
-    const allVariations = themeEntries.flatMap(([theme, { prefix, suffix, extra }]) => {
-      const border = aestheticBorders[theme as keyof typeof aestheticBorders];
-      const borderleft = border.borderleft;
-      const borderright = border.borderright;
-      const symbols = border.symbols;
-      
-      return [
-        {
-          type: "Combined",
-          theme,
-          text: `${prefix} ${borderleft} ${symbols[1]} ${transformedText} ${symbols[1]} ${borderright} ${suffix}`
-        },
-        {
-          type: "Emoji",
-          theme,
-          text: `${prefix} ${transformedText} ${suffix} ${extra}`
-        },
-        {
-          type: "Border",
-          theme,
-          text: `${borderleft} ${transformedText} ${borderright}`
-        },
-        {
-          type: "Symbol",
-          theme,
-          text: `${symbols[0]} ${transformedText} ${symbols[1]}`
-        }
-      ];
-    });
-
-    return (
-      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto bg-gradient-to-r from-indigo-100 to-purple-100">
-        <DialogHeader>
-          <DialogTitle className="capitalize text-2xl mb-4">
-            {style.replace(/_/g, ' ')} Variations
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-          {allVariations.map((variation, index) => (
-            <Card key={`${variation.type}-${variation.theme}-${index}`} className="p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-medium capitalize text text-blue-700">{variation.theme} {variation.type}</h4>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(variation.text)}
-                    className="h-6 w-6 p-0"
-                  >
-                    <Copy className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => shareText(variation.text)}
-                    className="h-6 w-6 p-0"
-                  >
-                    <Share2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-              <p className="text-lg border-t pt-2 break-words whitespace-pre-wrap overflow-hidden w-full max-w-full">{variation.text}</p>
-            </Card>
-          ))}
-        </div>
-      </DialogContent>
-    );
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-100 to-purple-100">
@@ -458,7 +484,6 @@ export default function Home() {
         {/* Preload important resources */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* Add preloads for critical CSS/JS if you have specific files */}
       </Head>
       <ToastProvider>
         <main className="min-h-screen py-10 px-2 pb-0 bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground">
@@ -475,7 +500,7 @@ export default function Home() {
             </div>
 
             {!hasInputText ? (
-              <div className="flex flex-col items-center justify-center py-6 text-center">
+              <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="text-5xl mb-4">✨📱✨</div>
                 <h1 className="text-2xl md:text-3xl font-bold mb-4">LushFonts – Make Your Text Stand Out</h1>
                 <p className="text-lg md:text-xl max-w-lg">
@@ -496,16 +521,35 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {displayedStyles.map((style) => {
                   const transformedText = transformText(inputText, style);
+                  const isDialogOpen = openDialogStyle === style;
+                  
                   return (
-                    <Dialog key={style}>
+                    <div key={style}>
                       <StyleCard 
                         style={style} 
                         transformedText={transformedText} 
                         copyToClipboard={copyToClipboard} 
-                        shareText={shareText} 
+                        shareText={shareText}
+                        onClickVariations={() => setOpenDialogStyle(style)}
                       />
-                      <VariationsDialog style={style} />
-                    </Dialog>
+                      
+                      <Dialog 
+                        open={isDialogOpen} 
+                        onOpenChange={(open) => {
+                          if (!open) setOpenDialogStyle(null);
+                        }}
+                      >
+                        {isDialogOpen && (
+                          <VariationsDialog 
+                            style={style}
+                            inputText={inputText}
+                            transformText={transformText}
+                            copyToClipboard={copyToClipboard}
+                            shareText={shareText}
+                          />
+                        )}
+                      </Dialog>
+                    </div>
                   );
                 })}
               </div>
@@ -515,10 +559,10 @@ export default function Home() {
 
         {toasts.map(({ id, title, description, variant }) => (
           <Toast
-          key={id}
-          variant={allowedVariants.includes(variant ?? '') ? (variant as 'default' | 'destructive') : undefined}
-          className="bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground border border-border"
-        >
+            key={id}
+            variant={allowedVariants.includes(variant ?? '') ? (variant as 'default' | 'destructive') : undefined}
+            className="bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground border border-border"
+          >
             <div className="grid gap-1">
               {title && <ToastTitle>{title}</ToastTitle>}
               {description && <ToastDescription className="text-muted-foreground">{description}</ToastDescription>}
