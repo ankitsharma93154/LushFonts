@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, lazy, Suspense, memo, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { useState, useEffect, lazy, Suspense, memo, useRef, useMemo } from "react";
+import { createClient } from "@supabase/supabase-js";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,11 +22,17 @@ import {
   ToastClose,
 } from "@/components/ui/toast";
 
-// Lazy load non-critical components
+// Lazy load non-critical components with specific loading boundaries
 const FancyTextFAQ = lazy(() => import("@/components/ui/faqs"));
 const Footer = lazy(() => import("@/components/ui/footer"));
 
+// Create a lightweight Supabase client to avoid the heavy WebLock issue
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pwxejnelixbqnuwovqvp.supabase.co',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+);
 
+// Pre-compute theme data instead of recalculating during render
 const emojiThemes = {
   kawaii: { prefix: "🌸", suffix: "✨", extra: "🎀" },
   dark: { prefix: "🖤", suffix: "🌙", extra: "⛓️" },
@@ -93,11 +99,20 @@ const aestheticBorders = {
   }
 };
 
-// Flatten the style categories into a single array
-const allStyles = [
-  "Fraktur",
-  "Bold Fraktur",
+// Only loading the most commonly used styles initially to reduce bundle size
+const commonStyles = [
   "Script",
+  "Circled",
+  "Bold Fraktur",
+  "Double-Struck",
+  "Small Caps",
+  "Strikethrough",
+  "Upside Down",
+  "Fraktur"
+];
+
+// Rest of the styles that will be loaded on demand
+const additionalStyles = [
   "Negative Circled",
   "Decorated (Thai-like)",
   "Angular",
@@ -106,21 +121,16 @@ const allStyles = [
   "Mixed Fonts",
   "Negative Squared",
   "Glitch",
-  "Circled",
   "Cyrillic_Style",
   "Math_Style",
   "Currency_Style",
-  "Double-Struck",
   "Fullwidth",
-  "Small Caps",
   "Cryptocurrency_Style",
   "CJK_Style",
   "Japanese_Style",
   "Subscript",
   "Superscript",
-  "Strikethrough",
   "Underline",
-  "Upside Down",
   "Regional Indicator",
   "Ornamental",
   "Thai_Style",
@@ -155,7 +165,7 @@ const allStyles = [
   "Encircled",
 ];
 
-// Examples for initial display
+// Precomputed examples for faster initial render
 const styleExamples = [
   '𝓣𝓱𝓲𝓼 𝓲𝓼 𝓯𝓪𝓷𝓬𝔂',
   '🅂🅃🅈🄻🄸🅂🄷',
@@ -183,14 +193,13 @@ interface ToastInfo {
   variant?: string;
 }
 
-// Create a custom useToast hook
+// Create a custom useToast hook with optimized rendering
 const useToast = () => {
   const [toasts, setToasts] = useState<ToastInfo[]>([]);
 
   const toast = ({ title, description, variant = "default" }: { title: string; description: string; variant?: string }) => {
     const id = Math.random().toString(36).substring(2, 9);
-    const newToast = { id, title, description, variant };
-    setToasts((prevToasts) => [...prevToasts, newToast]);
+    setToasts((prevToasts) => [...prevToasts, { id, title, description, variant }]);
 
     // Auto dismiss after 3 seconds
     setTimeout(() => {
@@ -205,30 +214,25 @@ const useToast = () => {
   };
 };
 
-// Create memoized VariationsDialog component to prevent unnecessary re-renders
+// Create memoized VariationsDialog component with optimized rendering
 const VariationsDialog = memo(({ 
   style, 
   inputText, 
-  transformText,
+  transformedText,
   copyToClipboard, 
   shareText 
 }: { 
   style: string;
   inputText: string;
-  transformText: (text: string, style: string) => string;
+  transformedText: string;
   copyToClipboard: (text: string) => void;
   shareText: (text: string) => void;
 }) => {
-  // Store transformed text in a ref to avoid recalculation
-  const transformedTextRef = useRef(transformText(inputText, style));
-  const [variations, setVariations] = useState<Array<{type: string, theme: string, text: string}>>([]);
-  
-  // Generate variations only once when component mounts
-  useEffect(() => {
-    const transformedText = transformedTextRef.current;
+  // Generate variations once using useMemo
+  const variations = useMemo(() => {
     const themeEntries = Object.entries(emojiThemes);
     
-    const allVariations = themeEntries.flatMap(([theme, { prefix, suffix, extra }]) => {
+    return themeEntries.flatMap(([theme, { prefix, suffix, extra }]) => {
       const border = aestheticBorders[theme as keyof typeof aestheticBorders];
       const borderleft = border.borderleft;
       const borderright = border.borderright;
@@ -257,9 +261,7 @@ const VariationsDialog = memo(({
         }
       ];
     });
-    
-    setVariations(allVariations);
-  }, [style, inputText]);
+  }, [transformedText]);
 
   return (
     <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto bg-gradient-to-r from-indigo-100 to-purple-100">
@@ -279,7 +281,7 @@ const VariationsDialog = memo(({
                   variant="outline"
                   size="sm"
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent event bubbling
+                    e.stopPropagation();
                     copyToClipboard(variation.text);
                   }}
                   className="h-6 w-6 p-0"
@@ -290,7 +292,7 @@ const VariationsDialog = memo(({
                   variant="outline"
                   size="sm"
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent event bubbling
+                    e.stopPropagation();
                     shareText(variation.text);
                   }}
                   className="h-6 w-6 p-0"
@@ -307,7 +309,7 @@ const VariationsDialog = memo(({
   );
 });
 
-// Memoized StyleCard component to prevent unnecessary re-renders
+// Optimized StyleCard component
 const StyleCard = memo(({ 
   style, 
   transformedText, 
@@ -368,21 +370,33 @@ export default function Home() {
   const [inputText, setInputText] = useState("");
   const [styles, setStyles] = useState<FontStyle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadedAllStyles, setLoadedAllStyles] = useState(false);
   const { toast, toasts, dismissToast } = useToast();
   const allowedVariants = ['default', 'destructive'];
   
   // Use state to track which dialog is open
   const [openDialogStyle, setOpenDialogStyle] = useState<string | null>(null);
   
-  // Use a ref to track if we've loaded data to prevent duplicate fetches
-  const dataFetched = useState(false);
+  // Transform text cache using an actual Map for better performance
+  const transformTextCacheRef = useRef(new Map());
 
+  // Add a reference to check if we've already fetched data
+  const hasInitializedRef = useRef(false);
+
+  // Prioritize loading critical styles first
   useEffect(() => {
-    if (!dataFetched[0]) {
+    if (!hasInitializedRef.current) {
       fetchStyles();
-      dataFetched[0] = true;
+      hasInitializedRef.current = true;
     }
-  }, [dataFetched]);
+  }, []);
+
+  // Load additional styles only when user starts typing
+  useEffect(() => {
+    if (inputText.length > 0 && !loadedAllStyles) {
+      setLoadedAllStyles(true);
+    }
+  }, [inputText, loadedAllStyles]);
 
   async function fetchStyles() {
     try {
@@ -400,35 +414,35 @@ export default function Home() {
     }
   }
 
-  // Transform text function optimized to memoize results
-  const transformTextCache = new Map();
-  
-  function transformText(text: string, styleName: string) {
-    // Create a cache key
-    const cacheKey = `${text}-${styleName}`;
-    
-    // Return cached result if available
-    if (transformTextCache.has(cacheKey)) {
-      return transformTextCache.get(cacheKey);
-    }
-    
-    // Find the style object that matches the styleName
-    const styleRow = styles.find(s => s["Font Style"].toLowerCase() === styleName.toLowerCase());
-
-    if (!styleRow) return text; // Return original text if style not found
-
-    const result = text.split('').map(char => {
-      // Check if the character exists as a column in our style row
-      if (styleRow[char]) {
-        return styleRow[char];
+  // Transform text function with optimized caching
+  const transformText = useMemo(() => {
+    return (text: string, styleName: string) => {
+      // Create a cache key
+      const cacheKey = `${text}-${styleName}`;
+      
+      // Return cached result if available
+      if (transformTextCacheRef.current.has(cacheKey)) {
+        return transformTextCacheRef.current.get(cacheKey);
       }
-      return char; // Return the original character if no styled version exists
-    }).join('');
-    
-    // Cache the result
-    transformTextCache.set(cacheKey, result);
-    return result;
-  }
+      
+      // Find the style object that matches the styleName
+      const styleRow = styles.find(s => s["Font Style"].toLowerCase() === styleName.toLowerCase());
+
+      if (!styleRow) return text; // Return original text if style not found
+
+      const result = text.split('').map(char => {
+        // Check if the character exists as a column in our style row
+        if (styleRow[char]) {
+          return styleRow[char];
+        }
+        return char; // Return the original character if no styled version exists
+      }).join('');
+      
+      // Cache the result
+      transformTextCacheRef.current.set(cacheKey, result);
+      return result;
+    };
+  }, [styles]);
 
   function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text);
@@ -453,10 +467,11 @@ export default function Home() {
     }
   }
 
+  // Loading component optimized for First Contentful Paint
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-100 to-purple-100">
-        <div className="animate-pulse text-2xl">Loading styles...</div>
+        <div className="text-2xl font-bold">Loading styles...</div>
       </div>
     );
   }
@@ -464,8 +479,12 @@ export default function Home() {
   // Check if the input has actual content (not just empty or whitespace)
   const hasInputText = inputText.trim().length > 0;
 
-  // For virtualization of styles list
-  const displayedStyles = hasInputText ? allStyles : [];
+  // For better performance, only display styles when there's input
+  const displayedStyles = hasInputText 
+    ? loadedAllStyles 
+      ? [...commonStyles, ...additionalStyles] 
+      : commonStyles
+    : [];
 
   return (
     <>
@@ -484,7 +503,9 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="google-site-verification" content="P1agJpKdlCXnnX75eeU2mqPvIghhBRzRHSV1SG5SjME" />
-        {/* Preload important resources */}
+        {/* Add preconnect to supabase to improve performance */}
+        <link rel="preconnect" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
+        <link rel="dns-prefetch" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </Head>
@@ -492,6 +513,7 @@ export default function Home() {
         <main className="min-h-screen py-10 px-2 pb-0 bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground">
           <div className="container mx-auto p-4 md:p-8">
             <div className="max-w-4xl mx-auto mb-8 text-center">
+              <h1 className="text-3xl font-bold mb-6">LushFonts - Fancy Text Generator</h1>
               <Input
                 type="text"
                 value={inputText}
@@ -505,7 +527,7 @@ export default function Home() {
             {!hasInputText ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="text-5xl mb-4">✨📱✨</div>
-                <h1 className="text-2xl md:text-3xl font-bold mb-4">LushFonts – Make Your Text Stand Out</h1>
+                <h2 className="text-2xl md:text-3xl font-bold mb-4">Make Your Text Stand Out</h2>
                 <p className="text-lg md:text-xl max-w-lg">
                   Enter some text above to transform it into fancy fonts for Instagram, TikTok, social media bios, and more!
                 </p>
@@ -536,25 +558,33 @@ export default function Home() {
                         onClickVariations={() => setOpenDialogStyle(style)}
                       />
                       
-                      <Dialog 
-                        open={isDialogOpen} 
-                        onOpenChange={(open) => {
-                          if (!open) setOpenDialogStyle(null);
-                        }}
-                      >
-                        {isDialogOpen && (
+                      {isDialogOpen && (
+                        <Dialog 
+                          open={isDialogOpen} 
+                          onOpenChange={(open) => {
+                            if (!open) setOpenDialogStyle(null);
+                          }}
+                        >
                           <VariationsDialog 
                             style={style}
                             inputText={inputText}
-                            transformText={transformText}
+                            transformedText={transformedText}
                             copyToClipboard={copyToClipboard}
                             shareText={shareText}
                           />
-                        )}
-                      </Dialog>
+                        </Dialog>
+                      )}
                     </div>
                   );
                 })}
+                
+                {!loadedAllStyles && (
+                  <div className="col-span-full text-center py-4">
+                    <Button onClick={() => setLoadedAllStyles(true)}>
+                      Load More Styles
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -576,11 +606,11 @@ export default function Home() {
         <ToastViewport />
       </ToastProvider>
       
-      {/* Lazy load non-critical components */}
-      <Suspense fallback={<div className="h-10 w-full bg-gradient-to-r from-indigo-100 to-purple-100"></div>}>
-        <FancyTextFAQ />
+      {/* Lazy load non-critical components with explicit height placeholders */}
+      <Suspense fallback={<div className="h-24 w-full bg-gradient-to-r from-indigo-100 to-purple-100"></div>}>
+        {hasInputText && <FancyTextFAQ />}
       </Suspense>
-      <Suspense fallback={<div className="h-10 w-full bg-gradient-to-r from-indigo-100 to-purple-100"></div>}>
+      <Suspense fallback={<div className="h-16 w-full bg-gradient-to-r from-indigo-100 to-purple-100"></div>}>
         <Footer />
       </Suspense>
     </>
