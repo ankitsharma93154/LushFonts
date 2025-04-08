@@ -477,10 +477,13 @@ export default function Home() {
         <meta property="og:description" content="Generate fancy fonts for Instagram, TikTok, Twitter bios & posts. Copy & paste cool text in seconds!" />
         <meta property="og:image" content="/og-image.png" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yourdomain.com" />
-        <meta name="twitter:card" content="summary_large_image" />
+        <meta property="og:url" content="https://www.lushfonts.site" />
+        <meta name="twitter:title" content="LushFonts | Cool & Aesthetic Text Generator" />
+        <meta name="twitter:description" content="Generate stylish fonts for Instagram, TikTok, Twitter bios & posts. Copy & paste in 1 click!" />
+        <meta name="twitter:image" content="/og-image.png" />
         <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="google-site-verification" content="P1agJpKdlCXnnX75eeU2mqPvIghhBRzRHSV1SG5SjME" />
         {/* Preload important resources */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
