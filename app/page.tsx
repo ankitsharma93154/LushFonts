@@ -528,9 +528,9 @@ export default function Home() {
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="text-5xl mb-4">✨📱✨</div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-4">Make Your Text Stand Out</h2>
-                {/* <p className="text-lg md:text-xl max-w-lg" font-display="swap">
+                <p className="text-lg md:text-xl max-w-lg" font-display="swap">
                   Transform text into fancy fonts for Instagram, TikTok, social media bios, and more!
-                </p> */}
+                </p>
                 <div className="flex py-10 px-6 flex-wrap gap-3 justify-center">
                   {styleExamples.map((style, idx) => (
                     <div
