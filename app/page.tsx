@@ -513,7 +513,7 @@ export default function Home() {
         <main className="min-h-screen py-10 px-2 pb-0 bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground">
           <div className="container mx-auto p-4 md:p-8">
             <div className="max-w-4xl mx-auto mb-8 text-center">
-              <h1 className="text-3xl font-bold mb-6">LushFonts - Fancy Text Generator</h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 ">LushFonts - Fancy Text Generator</h1>
               <Input
                 type="text"
                 value={inputText}
@@ -525,11 +525,11 @@ export default function Home() {
             </div>
 
             {!hasInputText ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="text-5xl mb-4">✨📱✨</div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-4">Make Your Text Stand Out</h2>
-                <p className="text-lg md:text-xl max-w-lg" font-display="swap">
-                  Transform text into fancy fonts for Instagram, TikTok, social media bios, and more!
+              <div className="flex flex-col items-center justify-center md:py-10 text-center">
+                <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-4">✨📱✨</div>
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4">Make Your Text Stand Out</h2>
+                <p className="text-base sm:text-lg md:text-xl max-w-lg" font-display="swap">
+                Transform text into fancy fonts for Instagram, TikTok, social media bios, and more!
                 </p>
                 <div className="flex py-10 px-6 flex-wrap gap-3 justify-center">
                   {styleExamples.map((style, idx) => (
