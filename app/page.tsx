@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Copy, Share2 } from "lucide-react";
 import Head from 'next/head';
+import script from 'next/script';
 import {
   Dialog,
   DialogContent,
@@ -510,12 +511,13 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
          {/* Google tag (gtag.js)  */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-EKT0752WRY"></script>
-        <script>
+        <script>{`
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-EKT0752WRY');
+         `}
         </script>
       </Head>
       <ToastProvider>
