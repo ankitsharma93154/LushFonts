@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Copy, Share2 } from "lucide-react";
 import Head from 'next/head';
-import script from 'next/script';
+import Script from 'next/script';
 import {
   Dialog,
   DialogContent,
@@ -510,15 +510,18 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
          {/* Google tag (gtag.js)  */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-EKT0752WRY"></script>
-        <script>{`
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-EKT0752WRY');
-         `}
-        </script>
+         <Script
+  src="https://www.googletagmanager.com/gtag/js?id=G-EKT0752WRY"
+  strategy="afterInteractive"
+/>
+<Script id="google-analytics" strategy="afterInteractive">
+  {`
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-EKT0752WRY');
+  `}
+</Script>
       </Head>
       <ToastProvider>
         <main className="min-h-screen py-10 px-2 pb-0 bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground">
