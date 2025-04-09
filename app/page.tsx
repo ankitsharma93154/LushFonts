@@ -6,8 +6,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Copy, Share2 } from "lucide-react";
-import Head from 'next/head';
-import Script from 'next/script';
 import {
   Dialog,
   DialogContent,
@@ -489,40 +487,6 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>LushFonts | Cool & Aesthetic Text Generator for Social Media</title>
-        <meta name="description" content="Generate fancy, stylish, and aesthetic fonts for Instagram, TikTok, Twitter bios & posts. Copy & paste cool text in seconds!" />
-        <meta name="keywords" content="fancy fonts, font generator, instagram fonts, tiktok fonts, aesthetic text, social media fonts" />
-        <meta property="og:title" content="LushFonts | Cool & Aesthetic Text Generator" />
-        <meta property="og:description" content="Generate fancy fonts for Instagram, TikTok, Twitter bios & posts. Copy & paste cool text in seconds!" />
-        <meta property="og:image" content="/og-image.png" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.lushfonts.site" />
-        <meta name="twitter:title" content="LushFonts | Cool & Aesthetic Text Generator" />
-        <meta name="twitter:description" content="Generate stylish fonts for Instagram, TikTok, Twitter bios & posts. Copy & paste in 1 click!" />
-        <meta name="twitter:image" content="/og-image.png" />
-        <link rel="icon" href="/favicon.ico" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="google-site-verification" content="P1agJpKdlCXnnX75eeU2mqPvIghhBRzRHSV1SG5SjME" />
-        {/* Add preconnect to supabase to improve performance */}
-        <link rel="preconnect" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
-        <link rel="dns-prefetch" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-         {/* Google tag (gtag.js)  */}
-         <Script
-  src="https://www.googletagmanager.com/gtag/js?id=G-EKT0752WRY"
-  strategy="afterInteractive"
-/>
-<Script id="google-analytics" strategy="afterInteractive">
-  {`
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-EKT0752WRY');
-  `}
-</Script>
-      </Head>
       <ToastProvider>
         <main className="min-h-screen py-10 px-2 pb-0 bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground">
           <div className="container mx-auto p-4 md:p-8">
