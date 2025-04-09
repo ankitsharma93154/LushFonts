@@ -508,6 +508,15 @@ export default function Home() {
         <link rel="dns-prefetch" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+         {/* Google tag (gtag.js)  */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-EKT0752WRY"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-EKT0752WRY');
+        </script>
       </Head>
       <ToastProvider>
         <main className="min-h-screen py-10 px-2 pb-0 bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground">
