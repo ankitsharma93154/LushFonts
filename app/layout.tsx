@@ -60,6 +60,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="preload" href="/fonts/yourfont.woff2" as="font" type="font/woff2" />
         {/* Add cookie consent script */}
         <Script id="cookie-consent" strategy="beforeInteractive">
           {`

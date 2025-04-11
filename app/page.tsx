@@ -25,6 +25,9 @@ import {
 const FancyTextFAQ = lazy(() => import("@/components/ui/faqs"));
 const Footer = lazy(() => import("@/components/ui/footer"));
 
+// Move Supabase initialization to a separate module to avoid WebLocks
+import { fetchFontStyles } from "@/lib/supabase";
+
 // Create a lightweight Supabase client to avoid the heavy WebLock issue
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pwxejnelixbqnuwovqvp.supabase.co',
@@ -467,12 +470,7 @@ export default function Home() {
 
   async function fetchStyles() {
     try {
-      const { data, error } = await supabase
-        .from('font_styles')
-        .select('*');
-
-      if (error) throw error;
-
+      const data = await fetchFontStyles();
       setStyles(data || []);
       setLoading(false);
     } catch (error) {
