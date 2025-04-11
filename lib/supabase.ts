@@ -1,52 +1,47 @@
-import { createClient } from '@supabase/supabase-js';
+// lib/services/supabase-client.ts
+import { createClient } from "@supabase/supabase-js";
 
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Create the client outside component lifecycle, preferably in a singleton pattern
+let supabaseClient: ReturnType<typeof createClient> | null = null;
 
-export type CharacterStyle = {
-  id: number;
-  character: string;
-  standard: string;
-  cursive: string;
-  bold_sans: string;
-  monospace: string;
-  gothic: string;
-  fraktur: string;
-  tiny_text: string;
-  contained: string;
-  stylish: string;
-  golden_ratio: string;
-  glitch: string;
-  vaporwave: string;
-  futuristic: string;
-  neon_glow: string;
-  emoji_blended: string;
-  japanese_aesthetic: string;
-  fantasy_game: string;
-  techno_hacker: string;
-  sci_fi: string;
-  runic: string;
-  handwritten: string;
-  greek_roman: string;
-  typewriter: string;
-  pixel_art: string;
-  alien_language: string;
-  "3d_extruded": string;
-  sparkle_magic: string;
-  alien_glyphs: string;
-  fantasy_rpg: string;
-  horror_movie: string;
-  street_graffiti: string;
-  funky_retro: string;
-  cyberpunk_glitch: string;
-  ghostly_hollow: string;
-  spooky_halloween: string;
-  tech_terminal: string;
-  calligraphy: string;
-  cloud_like: string;
-  starry_night: string;
-  superhero_comic: string;
-  mystical_rune: string;
-};
+// Interface for font style
+interface FontStyle {
+  style_id: number;
+  "Font Style": string;
+  [key: string]: any; // For all character columns (A-Z, a-z, 0-9)
+}
+
+// Get (or create) Supabase client
+function getSupabaseClient() {
+  if (supabaseClient) return supabaseClient;
+  
+  // Create the client only when needed
+  supabaseClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pwxejnelixbqnuwovqvp.supabase.co',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+  );
+  
+  return supabaseClient;
+}
+
+// Fetch font styles
+export async function fetchFontStyles(): Promise<FontStyle[]> {
+  const client = getSupabaseClient();
+  
+  try {
+    const { data, error } = await client
+      .from('font_styles')
+      .select('*');
+      
+    if (error) throw error;
+    return data as FontStyle[];
+  } catch (error) {
+    console.error('Error fetching styles:', error);
+    return [];
+  }
+}
+
+// Clean up function that can be called when your app unmounts
+export function cleanupSupabaseClient() {
+  supabaseClient = null;
+}
