@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     'instagram fonts',
     'tiktok fonts',
     'aesthetic text',
-    'social media fonts',
+    'Copy and paste',
   ],
   icons: {
     icon: '/favicon.ico',
@@ -55,22 +55,53 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-    <link rel="preconnect" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
-    <link rel="dns-prefetch" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-EKT0752WRY"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
+      <head>
+        <link rel="preconnect" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
+        <link rel="dns-prefetch" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* Add cookie consent script */}
+        <Script id="cookie-consent" strategy="beforeInteractive">
           {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-EKT0752WRY');
+            function manageCookies() {
+              // Basic cookie consent implementation
+              const consentKey = "lushfonts_analytics_consent";
+              
+              // Only set cookies if user has consented
+              if (localStorage.getItem(consentKey) === "true") {
+                return true;
+              }
+              
+              // Default to not allowing cookies until consent is given
+              return false;
+            }
+            
+            window.hasAnalyticsConsent = manageCookies();
           `}
         </Script>
+        
+        {/* Load analytics conditionally */}
+        <Script id="analytics-loader" strategy="afterInteractive">
+          {`
+            // Only load GA if consent is given
+            if (window.hasAnalyticsConsent) {
+              const script = document.createElement('script');
+              script.src = 'https://www.googletagmanager.com/gtag/js?id=G-EKT0752WRY';
+              script.async = true;
+              document.head.appendChild(script);
+              
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-EKT0752WRY', {
+                'anonymize_ip': true,
+                'cookie_flags': 'SameSite=None;Secure',
+                'cookie_expires': 60 * 60 * 24 * 30  // 30 days
+              });
+            }
+          `}
+        </Script>
+      </head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
