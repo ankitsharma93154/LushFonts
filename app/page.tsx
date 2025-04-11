@@ -33,16 +33,26 @@ const supabase = createClient(
 
 // Pre-compute theme data instead of recalculating during render
 const emojiThemes = {
-  kawaii: { prefix: "🌸", suffix: "✨", extra: "🎀" },
-  dark: { prefix: "🖤", suffix: "🌙", extra: "⛓️" },
-  cyberpunk: { prefix: "⚡", suffix: "🤖", extra: "💻" },
-  gaming: { prefix: "🎮", suffix: "🏆", extra: "🕹️" },
-  nature: { prefix: "🌿", suffix: "🍃", extra: "🌺" },
-  space: { prefix: "🌠", suffix: "🚀", extra: "👾" },
-  magic: { prefix: "✨", suffix: "🔮", extra: "⭐" },
-  ocean: { prefix: "🌊", suffix: "🐋", extra: "🐚" },
-  royal: { prefix: "👑", suffix: "💫", extra: "💎" },
-  love: { prefix: "💖", suffix: "💕", extra: "🌹" }
+  kawaii: { prefix: "🌺", suffix: "✿", extra: "🧸" },     
+  dark: { prefix: "🕷️", suffix: "☾", extra: "⛓️" },    
+  cyberpunk: { prefix: "⚡", suffix: "🤖", extra: "💻" }, 
+  gaming: { prefix: "🎯", suffix: "🎲", extra: "🎪" },    
+  nature: { prefix: "🌱", suffix: "🌻", extra: "🌺" },   
+  space: { prefix: "🪐", suffix: "👽", extra: "🌌" },     
+  magic: { prefix: "🧙", suffix: "🪄", extra: "⭐" },    
+  ocean: { prefix: "🐬", suffix: "🐋", extra: "🐙" },   
+  royal: { prefix: "🏛️", suffix: "💫", extra: "🔱" },     
+  love: { prefix: "💖", suffix: "💝", extra: "🌹" },       
+  vintage: { prefix: "📻", suffix: "🧵", extra: "🎭" },   
+  celestial: { prefix: "🌌", suffix: "☄️", extra: "🌜" }, 
+  geometric: { prefix: "◼️", suffix: "◻️", extra: "◾" },  
+  steampunk: { prefix: "🧭", suffix: "📐", extra: "🗝️" },  
+  fantasy: { prefix: "🧝", suffix: "🧚", extra: "🏰" },    
+  vaporwave: { prefix: "🌴", suffix: "📺", extra: "📼" }, 
+  cottagecore: { prefix: "🍂", suffix: "🌼", extra: "🍯" }, 
+  techno: { prefix: "🔊", suffix: "📱", extra: "💾" },     
+  minimalist: { prefix: "·", suffix: "○", extra: "□" },    
+  gothic: { prefix: "🦇", suffix: "📿", extra: "🕯️" }      
 };
 
 const aestheticBorders = {
@@ -95,28 +105,80 @@ const aestheticBorders = {
     borderleft: "💞 ",
     borderright: " 💞",
     symbols: ["❤", "❥", "💕"]
+  },
+
+  vintage: {
+    borderleft: "❈┈┈┈┈ ",
+    borderright: " ┈┈┈┈❈",
+    symbols: ["🕰️", "📜", "🪶"]
+  },
+  celestial: {
+    borderleft: "✧･ﾟ: ",
+    borderright: " :･ﾟ✧",
+    symbols: [ "⋆","✮", "✫"]
+  },
+  geometric: {
+    borderleft: "◢◤ ",
+    borderright: " ◥◣",
+    symbols: ["◆", "⬢", "⌬"]
+  },
+  steampunk: {
+    borderleft: "╔═♜═╗ ",
+    borderright: " ╚═♜═╝",
+    symbols: ["⚙️", "⌚", "🔩"]
+  },
+  fantasy: {
+    borderleft: "⚜️✧✦✧✦ ",
+    borderright: " ✦✧✦✧⚜️",
+    symbols: ["🐉", "🗡️", "🛡️"]
+  },
+  vaporwave: {
+    borderleft: "░▒▓█ ",
+    borderright: " █▓▒░",
+    symbols: ["💾", "🏙️", "🌊"]
+  },
+  cottagecore: {
+    borderleft: "⊰❁⊱ ",
+    borderright: " ⊰❁⊱",
+    symbols: [ "🧺", "🦋", "🌲"]
+  },
+  techno: {
+    borderleft: "█▓▒░ ",
+    borderright: " ░▒▓█",
+    symbols: [ "⌁", "📡", "🤖"]
+  },
+  minimalist: {
+    borderleft: "┌─── ",
+    borderright: " ───┐",
+    symbols: [ "■", "▫", "▬"]
+  },
+  gothic: {
+    borderleft: "†┈┈┈ ",
+    borderright: " ┈┈┈†",
+    symbols: [ "🗝️", "🥀", "🕸️"]
   }
 };
 
 // Only loading the most commonly used styles initially to reduce bundle size
 const commonStyles = [
-  "Script",
-  "Circled",
-  "Bold Fraktur",
-  "Double-Struck",
-  "Small Caps",
-  "Strikethrough",
-  "Upside Down",
-  "Fraktur"
+"Script,Calligraphy",
+"Negative Circled",
+"emoji symbols",
+"Bold Fraktur",
+"Encircled",
+"Coptic_Style",
+"Runic_Style",
 ];
 
 // Rest of the styles that will be loaded on demand
 const additionalStyles = [
-  "Negative Circled",
+  "Script",
+  "Circled",
+  "Double-Struck",
+  "Fraktur",
   "Decorated (Thai-like)",
   "Angular",
   "Calligraphy",
-  "emoji symbols",
   "Mixed Fonts",
   "Negative Squared",
   "Glitch",
@@ -127,6 +189,9 @@ const additionalStyles = [
   "Cryptocurrency_Style",
   "CJK_Style",
   "Japanese_Style",
+  "Small Caps",
+  "Strikethrough",
+  "Upside Down",
   "Subscript",
   "Superscript",
   "Underline",
@@ -160,8 +225,11 @@ const additionalStyles = [
   "Bridge Below",
   "Dot",
   "Wavethrough",
-  "Square",
-  "Encircled",
+  "Phonetic_Style",
+  "Greek_Style",
+  "Mixed_Fonts",
+  "Symbol_Style",
+  
 ];
 
 // Precomputed examples for faster initial render
@@ -241,12 +309,12 @@ const VariationsDialog = memo(({
         {
           type: "Combined",
           theme,
-          text: `${prefix} ${borderleft} ${symbols[1]} ${transformedText} ${symbols[1]} ${borderright} ${suffix}`
+          text: `${prefix} ${borderleft} ${symbols[0]} ${transformedText} ${symbols[0]} ${borderright} ${suffix}`
         },
         {
           type: "Emoji",
           theme,
-          text: `${prefix} ${transformedText} ${suffix} ${extra}`
+          text: `${prefix}${suffix} ${transformedText} ${suffix}${prefix} ${extra}`
         },
         {
           type: "Border",
@@ -256,7 +324,7 @@ const VariationsDialog = memo(({
         {
           type: "Symbol",
           theme,
-          text: `${symbols[0]} ${transformedText} ${symbols[1]}`
+          text: `${symbols[2]}${symbols[1]} ${transformedText} ${symbols[1]}${symbols[2]}`
         }
       ];
     });
