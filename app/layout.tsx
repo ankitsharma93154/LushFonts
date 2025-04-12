@@ -8,8 +8,8 @@ import Script from 'next/script';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'LushFonts | Cool & Aesthetic Text Generator for Social Media',
-  description: 'Generate fancy, stylish, and aesthetic fonts for Instagram, TikTok, Twitter bios & posts. Copy & paste cool text in seconds!',
+  title: 'Cool & Aesthetic Text Generator – Copy & Paste',
+  description: 'Copy & paste cool text in seconds!. Generate fancy, stylish, and aesthetic fonts for Instagram, TikTok, Twitter bios & posts.',
   keywords: [
     'fancy fonts',
     'font generator',
