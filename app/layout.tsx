@@ -101,6 +101,23 @@ export default function RootLayout({
             }
           `}
         </Script>
+
+        <Script id="website-schema" type="application/ld+json" strategy="afterInteractive">
+  {JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "LushFonts",
+    "url": "https://lushfonts.site",
+    "description":
+      "Get stylish, aesthetic, and cool fonts for Instagram & more — 100% free at LushFonts. Copy and paste your favorite text styles in seconds.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://lushfonts.site/search?q={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+  })}
+</Script>
+
       </head>
       <body className={inter.className}>
         <ThemeProvider
