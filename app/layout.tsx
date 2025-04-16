@@ -60,25 +60,6 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://pwxejnelixbqnuwovqvp.supabase.co" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* Add cookie consent script */}
-        <Script id="cookie-consent" strategy="beforeInteractive">
-          {`
-            function manageCookies() {
-              // Basic cookie consent implementation
-              const consentKey = "lushfonts_analytics_consent";
-              
-              // Only set cookies if user has consented
-              if (localStorage.getItem(consentKey) === "true") {
-                return true;
-              }
-              
-              // Default to not allowing cookies until consent is given
-              return false;
-            }
-            
-            window.hasAnalyticsConsent = manageCookies();
-          `}
-        </Script>
         
         {/* Load analytics conditionally */}
         <Script id="analytics-loader" strategy="afterInteractive">
