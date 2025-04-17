@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Search, ChevronDown, ChevronUp, Bookmark, BookmarkCheck } from 'lucide-react';
+import Head from 'next/head'; // If using Next.js
+
+
+
 
 interface FAQItem {
   id: string;
@@ -118,6 +122,19 @@ const FancyTextFAQ = () => {
     }
   ];
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': faqData.map(faq => ({
+      '@type': 'Question',
+      'name': faq.question,
+      'acceptedAnswer': {
+        '@type': 'Answer',
+        'text': faq.answer
+      }
+    }))
+  };
+
   useEffect(() => {
     const savedFavorites = localStorage.getItem('faqFavorites');
     if (savedFavorites) {
@@ -157,6 +174,12 @@ const FancyTextFAQ = () => {
 
   return (
     <section className="py-16 pt-0 bg-gradient-to-r from-indigo-100 to-purple-100">
+      <Head>
+  <script
+    type="application/ld+json"
+    dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+  />
+</Head>
       <div className="max-w-5xl mx-auto px-4">
         <div className="text-center mb-10">
           <h2 className="text-4xl font-extrabold mb-3 text-black">
