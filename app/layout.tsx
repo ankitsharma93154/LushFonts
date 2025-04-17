@@ -61,27 +61,18 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         
-        {/* Load analytics conditionally */}
-        <Script id="analytics-loader" strategy="afterInteractive">
-          {`
-            // Only load GA if consent is given
-            if (window.hasAnalyticsConsent) {
-              const script = document.createElement('script');
-              script.src = 'https://www.googletagmanager.com/gtag/js?id=G-EKT0752WRY';
-              script.async = true;
-              document.head.appendChild(script);
-              
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-EKT0752WRY', {
-                'anonymize_ip': true,
-                'cookie_flags': 'SameSite=None;Secure',
-                'cookie_expires': 60 * 60 * 24 * 30  // 30 days
-              });
-            }
-          `}
-        </Script>
+        <Script
+           src="https://www.googletagmanager.com/gtag/js?id=G-EKT0752WRY"
+           strategy="afterInteractive"
+         />
+         <Script id="google-analytics" strategy="afterInteractive">
+           {`
+             window.dataLayer = window.dataLayer || [];
+             function gtag(){dataLayer.push(arguments);}
+             gtag('js', new Date());
+             gtag('config', 'G-EKT0752WRY');
+           `}
+         </Script>
 
         <Script id="website-schema" type="application/ld+json" strategy="afterInteractive">
   {JSON.stringify({
