@@ -62,17 +62,21 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         
         <Script
-           src="https://www.googletagmanager.com/gtag/js?id=G-EKT0752WRY"
-           strategy="afterInteractive"
-         />
-         <Script id="google-analytics" strategy="afterInteractive">
-           {`
-             window.dataLayer = window.dataLayer || [];
-             function gtag(){dataLayer.push(arguments);}
-             gtag('js', new Date());
-             gtag('config', 'G-EKT0752WRY');
-           `}
-         </Script>
+  src="https://www.googletagmanager.com/gtag/js?id=G-EKT0752WRY"
+  strategy="afterInteractive"
+/>
+<Script id="google-analytics" strategy="afterInteractive">
+  {`
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-EKT0752WRY', {
+      cookie_flags: 'SameSite=None;Secure',
+      debug_mode: false
+    });
+  `}
+</Script>
+
 
         <Script id="website-schema" type="application/ld+json" strategy="afterInteractive">
   {JSON.stringify({
