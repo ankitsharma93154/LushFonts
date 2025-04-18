@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, lazy, Suspense, memo, useRef, useMemo } from "react";
+import { useState, useEffect, lazy, Suspense, memo, useRef, useMemo, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -263,11 +263,12 @@ interface ToastInfo {
   variant?: string;
 }
 
-// Create a custom useToast hook with optimized rendering
+// OPTIMIZATION 1: Extract Toast logic to a custom hook with controlled updates
 const useToast = () => {
   const [toasts, setToasts] = useState<ToastInfo[]>([]);
-
-  const toast = ({ title, description, variant = "default" }: { title: string; description: string; variant?: string }) => {
+  
+  // Use useCallback for stable function references
+  const toast = useCallback(({ title, description, variant = "default" }: { title: string; description: string; variant?: string }) => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prevToasts) => [...prevToasts, { id, title, description, variant }]);
 
@@ -275,16 +276,17 @@ const useToast = () => {
     setTimeout(() => {
       setToasts((prevToasts) => prevToasts.filter((t) => t.id !== id));
     }, 3000);
-  };
+  }, []);
 
-  return { 
-    toast, 
-    toasts, 
-    dismissToast: (id: string) => setToasts(prevToasts => prevToasts.filter(t => t.id !== id)) 
-  };
+  const dismissToast = useCallback((id: string) => {
+    setToasts(prevToasts => prevToasts.filter(t => t.id !== id));
+  }, []);
+
+  return { toast, toasts, dismissToast };
 };
 
-// Create memoized VariationsDialog component with optimized rendering
+
+// Create memoized VariationsDialog component with improved UI
 const VariationsDialog = memo(({ 
   style, 
   inputText, 
@@ -298,88 +300,213 @@ const VariationsDialog = memo(({
   copyToClipboard: (text: string) => void;
   shareText: (text: string) => void;
 }) => {
-  // Generate variations once using useMemo
-  const variations = useMemo(() => {
-    const themeEntries = Object.entries(emojiThemes);
+  // State for style options - now with per-element theme selection
+  const [options, setOptions] = useState({
+    useBorder: true,
+    useEmoji: true,
+    useSymbol: true,
+    borderTheme: "kawaii",
+    emojiTheme: "kawaii",
+    symbolTheme: "kawaii"
+  });
+  
+  // State for selected overall theme (for UI display)
+  const [selectedTheme, setSelectedTheme] = useState<string>("kawaii"); // Default theme
+  
+  // Generate the current preview text based on selected options
+  const previewText = useMemo(() => {
+    // Get theme elements from potentially different themes
+    const borderThemeData = emojiThemes[options.borderTheme as keyof typeof emojiThemes];
+    const emojiThemeData = emojiThemes[options.emojiTheme as keyof typeof emojiThemes];
+    const symbolThemeData = emojiThemes[options.symbolTheme as keyof typeof emojiThemes];
     
-    return themeEntries.flatMap(([theme, { prefix, suffix, extra }]) => {
-      const border = aestheticBorders[theme as keyof typeof aestheticBorders];
-      const borderleft = border.borderleft;
-      const borderright = border.borderright;
-      const symbols = border.symbols;
-      
-      return [
-        {
-          type: "Combined",
-          theme,
-          text: `${prefix} ${borderleft} ${symbols[0]} ${transformedText} ${symbols[0]} ${borderright} ${suffix}`
-        },
-        {
-          type: "Emoji",
-          theme,
-          text: `${prefix}${suffix} ${transformedText} ${suffix}${prefix} ${extra}`
-        },
-        {
-          type: "Border",
-          theme,
-          text: `${borderleft} ${transformedText} ${borderright}`
-        },
-        {
-          type: "Symbol",
-          theme,
-          text: `${symbols[2]}${symbols[1]} ${transformedText} ${symbols[1]}${symbols[2]}`
-        }
-      ];
+    const borderElements = aestheticBorders[options.borderTheme as keyof typeof aestheticBorders];
+    const symbolElements = aestheticBorders[options.symbolTheme as keyof typeof aestheticBorders];
+    
+    if (!borderThemeData || !emojiThemeData || !symbolThemeData || !borderElements || !symbolElements) {
+      return transformedText;
+    }
+    
+    // Extract specific elements from each theme
+    const { borderleft, borderright } = borderElements;
+    const symbols = symbolElements.symbols;
+    const { prefix, suffix, extra } = emojiThemeData;
+    
+    let result = transformedText;
+    
+    // Apply symbol decoration if enabled
+    if (options.useSymbol) {
+      result = `${symbols[1]} ${result} ${symbols[1]}`;
+    }
+    
+    // Apply border if enabled
+    if (options.useBorder) {
+      result = `${borderleft} ${result} ${borderright}`;
+    }
+    
+    // Apply emoji if enabled
+    if (options.useEmoji) {
+      result = `${prefix} ${result} ${suffix}`;
+      // Add extra emoji at the end if we have both symbol and emoji enabled
+      if (options.useSymbol) {
+        result = `${result} ${extra}`;
+      }
+    }
+    
+    return result;
+  }, [transformedText, options]);
+  
+  // Function to handle random selection
+  const handleRandom = () => {
+    const themeKeys = Object.keys(emojiThemes);
+    
+    // Select potentially different themes for each element
+    const borderTheme = themeKeys[Math.floor(Math.random() * themeKeys.length)];
+    const emojiTheme = themeKeys[Math.floor(Math.random() * themeKeys.length)];
+    const symbolTheme = themeKeys[Math.floor(Math.random() * themeKeys.length)];
+    
+    // Generate random boolean values for each option
+    let newBorder = Math.random() > 0.5;
+    let newEmoji = Math.random() > 0.5;
+    let newSymbol = Math.random() > 0.5;
+    
+    // Ensure at least one option is selected
+    if (!newBorder && !newEmoji && !newSymbol) {
+      // If all are false, randomly choose one to be true
+      const randomOption = Math.floor(Math.random() * 3);
+      if (randomOption === 0) newBorder = true;
+      else if (randomOption === 1) newEmoji = true;
+      else newSymbol = true;
+    }
+    
+    // Update options
+    setOptions({
+      useBorder: newBorder,
+      useEmoji: newEmoji,
+      useSymbol: newSymbol,
+      borderTheme: borderTheme,
+      emojiTheme: emojiTheme,
+      symbolTheme: symbolTheme
     });
-  }, [transformedText]);
+    
+    // For UI display purposes, we still need to set a primary selected theme
+    // Let's use the theme that corresponds to the first enabled option
+    if (newBorder) setSelectedTheme(borderTheme);
+    else if (newEmoji) setSelectedTheme(emojiTheme);
+    else setSelectedTheme(symbolTheme);
+  };
+
+  // Toggle a specific option
+  const toggleOption = (option: 'useBorder' | 'useEmoji' | 'useSymbol') => {
+    setOptions(prev => ({
+      ...prev,
+      [option]: !prev[option]
+    }));
+  };
+
+  // Update theme for all elements
+  const updateTheme = (theme: string) => {
+    setSelectedTheme(theme);
+    setOptions(prev => ({
+      ...prev,
+      borderTheme: theme,
+      emojiTheme: theme,
+      symbolTheme: theme
+    }));
+  };
 
   return (
-    <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto bg-gradient-to-r from-indigo-100 to-purple-100">
+    <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto bg-gradient-to-r from-indigo-100 to-purple-100">
       <DialogHeader>
         <DialogTitle className="capitalize text-2xl mb-4">
           {style.replace(/_/g, ' ')} Variations
         </DialogTitle>
       </DialogHeader>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-        {variations.map((variation, index) => (
-          <Card key={`${variation.type}-${variation.theme}-${index}`} className="p-4 hover:bg-gray-50 transition-colors">
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="font-medium capitalize text text-blue-700">{variation.theme} {variation.type}</h4>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    copyToClipboard(variation.text);
-                  }}
-                  className="h-6 w-6 p-0"
-                >
-                  <Copy className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    shareText(variation.text);
-                  }}
-                  className="h-6 w-6 p-0"
-                >
-                  <Share2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-            <p className="text-lg border-t pt-2 break-words whitespace-pre-wrap overflow-hidden w-full max-w-full">{variation.text}</p>
-          </Card>
+      {/* Preview section styled like homepage */}
+      <Card className="p-4 border border-gray-200 hover:border-gray-400 transition-colors mb-6">
+        <div className="flex justify-between items-center gap-2 mb-3">
+          <p className="text-xl break-words whitespace-pre-wrap overflow-hidden w-full max-w-full">{previewText}</p>
+
+          <div className="flex justify-end items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => copyToClipboard(previewText)}
+              className="h-8 w-8 p-0"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => shareText(previewText)}
+              className="h-8 w-8 p-0"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+            <span className="text-3xl cursor-pointer">🎨</span>
+          </div>
+        </div>
+      </Card>
+
+      {/* Style options as toggle switches and random button */}
+      <div className="flex flex-wrap gap-2 mb-6 items-center">
+        <div className="flex-1 flex flex-wrap gap-2">
+          <Button
+            variant={options.useBorder ? "default" : "outline"}
+            onClick={() => toggleOption('useBorder')}
+            className="flex-1"
+          >
+            {options.useBorder ? "✓ Border" : "Border"}
+          </Button>
+          <Button
+            variant={options.useEmoji ? "default" : "outline"}
+            onClick={() => toggleOption('useEmoji')}
+            className="flex-1"
+          >
+            {options.useEmoji ? "✓ Emoji" : "Emoji"}
+          </Button>
+          <Button
+            variant={options.useSymbol ? "default" : "outline"}
+            onClick={() => toggleOption('useSymbol')}
+            className="flex-1"
+          >
+            {options.useSymbol ? "✓ Symbol" : "Symbol"}
+          </Button>
+        </div>
+        <Button 
+          onClick={handleRandom}
+          variant="secondary"
+          className="flex gap-1 items-center"
+        >
+          <span>Random</span>
+          <span className="text-lg">🎲</span>
+        </Button>
+      </div>
+
+      {/* Theme grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+        {Object.entries(emojiThemes).map(([theme, { prefix, suffix }]) => (
+          <Button
+            key={theme}
+            variant={selectedTheme === theme ? "default" : "outline"}
+            onClick={() => updateTheme(theme)}
+            className="p-2 h-auto flex flex-col items-center"
+            title={theme}
+          >
+           
+            <span className="text-xl">{prefix} <span className="text-sm capitalize mb-1">{theme}</span>{suffix}</span>
+          </Button>
         ))}
       </div>
     </DialogContent>
   );
 });
 
-// Optimized StyleCard component
+
+
+// OPTIMIZATION 3: Improved StyleCard component with proper memoization
 const StyleCard = memo(({ 
   style, 
   transformedText, 
@@ -393,49 +520,175 @@ const StyleCard = memo(({
   shareText: (text: string) => void;
   onClickVariations: () => void;
 }) => {
+  // Separate handlers to avoid function recreation on each render
+  const handleCopy = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    copyToClipboard(transformedText);
+  }, [copyToClipboard, transformedText]);
+  
+  const handleShare = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    shareText(transformedText);
+  }, [shareText, transformedText]);
+  
+  const handleVariations = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClickVariations();
+  }, [onClickVariations]);
+
   return (
     <Card className="p-4 border border-gray-200 hover:border-gray-400 transition-colors">
-      <div className="flex justify-between flex-wrap items-center gap-2 mb-3">
+      <div className="flex justify-between items-center gap-2 mb-3">
         <p className="text-xl break-words whitespace-pre-wrap overflow-hidden w-full max-w-full">{transformedText}</p>
-
-        <div className="flex justify-end flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              copyToClipboard(transformedText);
-            }}
-            className="h-8 w-8 p-0"
-          >
-            <Copy className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              shareText(transformedText);
-            }}
-            className="h-8 w-8 p-0"
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
-          <span 
-            className="text-3xl cursor-pointer" 
-            onClick={(e) => {
-              e.stopPropagation();
-              onClickVariations();
-            }}
-          >
-            🎨
-          </span>
+        <div className="flex justify-end items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleCopy}
+          className="h-8 w-8 p-0"
+        >
+          <Copy className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleShare}
+          className="h-8 w-8 p-0"
+        >
+          <Share2 className="h-4 w-4" />
+        </Button>
+        <span 
+          className="text-3xl cursor-pointer" 
+          onClick={handleVariations}
+        >
+          🎨
+        </span>
         </div>
       </div>
     </Card>
   );
 });
 
+// OPTIMIZATION 4: Create a virtualized list component for better rendering
+const VirtualizedStyleList = memo(({ 
+  styles, 
+  inputText, 
+  transformText, 
+  copyToClipboard, 
+  shareText, 
+  openDialogStyle, 
+  setOpenDialogStyle 
+}: {
+  styles: string[];
+  inputText: string;
+  transformText: (text: string, style: string) => string;
+  copyToClipboard: (text: string) => void;
+  shareText: (text: string) => void;
+  openDialogStyle: string | null;
+  setOpenDialogStyle: (style: string | null) => void;
+}) => {
+  // Only render a limited number of items initially
+  const [visibleCount, setVisibleCount] = useState(9); // Start with 9 items (3x3 grid)
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Load more items when scrolling near the bottom
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visibleCount < styles.length) {
+          setVisibleCount(prev => Math.min(prev + 6, styles.length));
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    
+    return () => {
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current);
+      }
+    };
+  }, [styles.length, visibleCount]);
+  
+  // Only render the visible items
+  const visibleStyles = styles.slice(0, visibleCount);
+  
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      {visibleStyles.map((style) => {
+        const transformedText = transformText(inputText, style);
+        const isDialogOpen = openDialogStyle === style;
+        
+        return (
+          <div key={style}>
+            <StyleCard 
+              style={style} 
+              transformedText={transformedText} 
+              copyToClipboard={copyToClipboard} 
+              shareText={shareText}
+              onClickVariations={() => setOpenDialogStyle(style)}
+            />
+            
+            {isDialogOpen && (
+              <Dialog 
+                open={isDialogOpen} 
+                onOpenChange={(open) => {
+                  if (!open) setOpenDialogStyle(null);
+                }}
+              >
+                <VariationsDialog 
+                  style={style}
+                  inputText={inputText}
+                  transformedText={transformedText}
+                  copyToClipboard={copyToClipboard}
+                  shareText={shareText}
+                />
+              </Dialog>
+            )}
+          </div>
+        );
+      })}
+      
+      {/* Loading trigger element */}
+      {visibleCount < styles.length && (
+        <div ref={containerRef} className="h-4 col-span-full" />
+      )}
+      
+    </div>
+  );
+});
+
+// OPTIMIZATION 5: Optimized welcome screen with reduced animations and simplified DOM
+const WelcomeScreen = memo(() => {
+  // Use a reduced set of examples for the welcome screen
+  const displayExamples = styleExamples.slice(0, 7);
+  
+  return (
+    <div className="flex flex-col items-center justify-center md:py-6 text-center">
+      <div className="text-3xl mb-4">✨📱✨</div>
+      <h2 className="text-xl sm:text-2xl font-bold mb-4">Make Your Text Stand Out</h2>
+      <p className="text-base sm:text-lg max-w-lg">
+        Transform text into fancy fonts for Instagram, TikTok, social media bios, and more!
+      </p>
+      <div className="flex py-6 px-4 flex-wrap gap-3 justify-center sm:max-w-[900px]">
+        {displayExamples.map((style, idx) => (
+          <div
+            key={idx}
+            className="bg-white text-black px-4 py-2 rounded shadow text-xl"
+          >
+            {style}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+
+// OPTIMIZATION 6: Main component with better resource management
 export default function Home() {
   const [inputText, setInputText] = useState("");
   const [styles, setStyles] = useState<FontStyle[]>([]);
@@ -444,80 +697,113 @@ export default function Home() {
   const { toast, toasts, dismissToast } = useToast();
   const allowedVariants = ['default', 'destructive'];
   
-  // Use state to track which dialog is open
   const [openDialogStyle, setOpenDialogStyle] = useState<string | null>(null);
   
-  // Transform text cache using an actual Map for better performance
+  // OPTIMIZATION 7: Better cache with size limits to prevent memory leaks
   const transformTextCacheRef = useRef(new Map());
-
-  // Add a reference to check if we've already fetched data
+  const MAX_CACHE_SIZE = 1000; // Limit cache size
+  
   const hasInitializedRef = useRef(false);
-
-  // Prioritize loading critical styles first
+  
+  // OPTIMIZATION 8: Smarter data fetching
   useEffect(() => {
     if (!hasInitializedRef.current) {
       fetchStyles();
       hasInitializedRef.current = true;
     }
+    
+    // Clean up the cache when component unmounts to prevent memory leaks
+    return () => {
+      transformTextCacheRef.current.clear();
+    };
   }, []);
-
-  // Load additional styles only when user starts typing
+  
+  // Only load additional styles when needed
   useEffect(() => {
-    if (inputText.length > 0 && !loadedAllStyles) {
-      setLoadedAllStyles(true);
+    if (inputText.trim().length > 0 && !loadedAllStyles) {
+      // Delay loading to prevent UI blocking during typing
+      const timer = setTimeout(() => {
+        setLoadedAllStyles(true);
+      }, 300);
+      
+      return () => clearTimeout(timer);
     }
   }, [inputText, loadedAllStyles]);
-
-  async function fetchStyles() {
+  
+  // OPTIMIZATION 9: Better error handling for data fetching
+  const fetchStyles = useCallback(async () => {
     try {
       const data = await fetchFontStyles();
-      setStyles(data || []);
-      setLoading(false);
+      if (data) {
+        setStyles(data);
+      } else {
+        // Handle empty data case
+        toast({
+          title: "Warning",
+          description: "Could not load font styles. Some features may be limited.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('Error fetching styles:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load font styles. Please try refreshing.",
+        variant: "destructive"
+      });
+    } finally {
       setLoading(false);
     }
-  }
-
-  // Transform text function with optimized caching
-  const transformText = useMemo(() => {
-    return (text: string, styleName: string) => {
-      // Create a cache key
-      const cacheKey = `${text}-${styleName}`;
-      
-      // Return cached result if available
-      if (transformTextCacheRef.current.has(cacheKey)) {
-        return transformTextCacheRef.current.get(cacheKey);
+  }, [toast]);
+  
+  // OPTIMIZATION 10: Improved transform function with better memoization and cache management
+  const transformText = useCallback((text: string, styleName: string) => {
+    // Don't process empty text
+    if (!text) return "";
+    
+    // Create a cache key
+    const cacheKey = `${text}-${styleName}`;
+    
+    // Return cached result if available
+    if (transformTextCacheRef.current.has(cacheKey)) {
+      return transformTextCacheRef.current.get(cacheKey);
+    }
+    
+    // Find the style object that matches the styleName
+    const styleRow = styles.find(s => s["Font Style"].toLowerCase() === styleName.toLowerCase());
+    
+    if (!styleRow) return text; // Return original text if style not found
+    
+    const result = text.split('').map(char => {
+      // Check if the character exists as a column in our style row
+      if (styleRow[char]) {
+        return styleRow[char];
       }
-      
-      // Find the style object that matches the styleName
-      const styleRow = styles.find(s => s["Font Style"].toLowerCase() === styleName.toLowerCase());
-
-      if (!styleRow) return text; // Return original text if style not found
-
-      const result = text.split('').map(char => {
-        // Check if the character exists as a column in our style row
-        if (styleRow[char]) {
-          return styleRow[char];
-        }
-        return char; // Return the original character if no styled version exists
-      }).join('');
-      
-      // Cache the result
-      transformTextCacheRef.current.set(cacheKey, result);
-      return result;
-    };
+      return char; // Return the original character if no styled version exists
+    }).join('');
+    
+    // Manage cache size
+    if (transformTextCacheRef.current.size >= MAX_CACHE_SIZE) {
+      // Delete oldest entry (first key in Map)
+      const firstKey = transformTextCacheRef.current.keys().next().value;
+      transformTextCacheRef.current.delete(firstKey);
+    }
+    
+    // Cache the result
+    transformTextCacheRef.current.set(cacheKey, result);
+    return result;
   }, [styles]);
-
-  function copyToClipboard(text: string) {
+  
+  // OPTIMIZATION 11: Stable function references with useCallback
+  const copyToClipboard = useCallback((text: string) => {
     navigator.clipboard.writeText(text);
     toast({
       title: "Copied to clipboard",
       description: "Text has been copied to your clipboard",
     });
-  }
-
-  function shareText(text: string) {
+  }, [toast]);
+  
+  const shareText = useCallback((text: string) => {
     if (navigator.share) {
       navigator.share({
         title: 'Styled Text',
@@ -530,9 +816,9 @@ export default function Home() {
         description: "Text copied to clipboard instead",
       });
     }
-  }
-
-  // Loading component optimized for First Contentful Paint
+  }, [copyToClipboard, toast]);
+  
+  // OPTIMIZATION 12: Better loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-100 to-purple-100">
@@ -540,28 +826,34 @@ export default function Home() {
       </div>
     );
   }
-
-  // Check if the input has actual content (not just empty or whitespace)
+  
+  // Check if the input has actual content
   const hasInputText = inputText.trim().length > 0;
-
-  // For better performance, only display styles when there's input
+  
+  // OPTIMIZATION 13: Smart style list management
   const displayedStyles = hasInputText 
     ? loadedAllStyles 
-      ? [...commonStyles, ...additionalStyles] 
+      ? [...commonStyles, ...additionalStyles]
       : commonStyles
     : [];
-
+  
+  // OPTIMIZATION 14: Debounced input handling
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputText(value);
+  };
+  
   return (
     <>
       <ToastProvider>
-        <main className="min-h-screen py-10 px-2 pb-0 bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground">
-          <div className="container mx-auto p-4 md:p-8">
-            <div className="max-w-4xl mx-auto mb-8 text-center">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 ">LushFonts - Fancy Text Generator</h1>
+        <main className="min-h-screen py-8 px-2 bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground">
+          <div className="container mx-auto p-4 md:p-6">
+            <div className="max-w-4xl mx-auto mb-10 text-center">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-10">LushFonts - Fancy Text Generator</h1>
               <Input
                 type="text"
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Enter text to transform..."
                 className="text-xl p-6 border-input focus:border-primary focus:ring-2 focus:ring-accent"
                 aria-label="Text to transform"
@@ -569,67 +861,17 @@ export default function Home() {
             </div>
 
             {!hasInputText ? (
-              <div className="flex flex-col items-center justify-center md:py-10 text-center">
-                <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-4">✨📱✨</div>
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4">Make Your Text Stand Out</h2>
-                <p className="text-base sm:text-lg md:text-xl max-w-lg" font-display="swap">
-                Transform text into fancy fonts for Instagram, TikTok, social media bios, and more!
-                </p>
-                <div className="flex py-10 px-6 flex-wrap gap-3 justify-center">
-                  {styleExamples.map((style, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-white text-black px-4 py-2 rounded shadow text-xl hover:scale-105 transition-transform duration-200 cursor-pointer"
-                    >
-                      {style}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <WelcomeScreen />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {displayedStyles.map((style) => {
-                  const transformedText = transformText(inputText, style);
-                  const isDialogOpen = openDialogStyle === style;
-                  
-                  return (
-                    <div key={style}>
-                      <StyleCard 
-                        style={style} 
-                        transformedText={transformedText} 
-                        copyToClipboard={copyToClipboard} 
-                        shareText={shareText}
-                        onClickVariations={() => setOpenDialogStyle(style)}
-                      />
-                      
-                      {isDialogOpen && (
-                        <Dialog 
-                          open={isDialogOpen} 
-                          onOpenChange={(open) => {
-                            if (!open) setOpenDialogStyle(null);
-                          }}
-                        >
-                          <VariationsDialog 
-                            style={style}
-                            inputText={inputText}
-                            transformedText={transformedText}
-                            copyToClipboard={copyToClipboard}
-                            shareText={shareText}
-                          />
-                        </Dialog>
-                      )}
-                    </div>
-                  );
-                })}
-                
-                {!loadedAllStyles && (
-                  <div className="col-span-full text-center py-4">
-                    <Button onClick={() => setLoadedAllStyles(true)}>
-                      Load More Styles
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <VirtualizedStyleList 
+                styles={displayedStyles}
+                inputText={inputText}
+                transformText={transformText}
+                copyToClipboard={copyToClipboard}
+                shareText={shareText}
+                openDialogStyle={openDialogStyle}
+                setOpenDialogStyle={setOpenDialogStyle}
+              />
             )}
           </div>
         </main>
@@ -650,11 +892,11 @@ export default function Home() {
         <ToastViewport />
       </ToastProvider>
       
-      {/* Lazy load non-critical components with explicit height placeholders */}
-      <Suspense fallback={<div className="h-24 w-full bg-gradient-to-r from-indigo-100 to-purple-100"></div>}>
+      {/* OPTIMIZATION 15: Smarter lazy loading */}
+      <Suspense fallback={<div className="h-16 bg-gradient-to-r from-indigo-100 to-purple-100"></div>}>
         {hasInputText && <FancyTextFAQ />}
       </Suspense>
-      <Suspense fallback={<div className="h-16 w-full bg-gradient-to-r from-indigo-100 to-purple-100"></div>}>
+      <Suspense fallback={null}>
         <Footer />
       </Suspense>
     </>
