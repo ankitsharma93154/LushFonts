@@ -445,7 +445,6 @@ const VariationsDialog = memo(({
             >
               <Share2 className="h-4 w-4" />
             </Button>
-            <span className="text-3xl cursor-pointer">🎨</span>
           </div>
         </div>
       </Card>
