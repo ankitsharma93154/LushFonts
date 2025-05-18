@@ -7,14 +7,18 @@
   --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 255, 255, 255;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Keep light theme even in dark mode */
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 255, 255, 255;
-    --background-end-rgb: 255, 255, 255;
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
   }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out both;
 }
 
 @layer base {
@@ -58,43 +62,6 @@
     --chart-5: 0 0% 90%;
 
     --radius: 0.5rem;
-  }
-
-  /* Dark theme kept but modified to maintain black/white scheme */
-  .dark {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-
-    --primary: 0 0% 0%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 0 0% 98%;
-    --secondary-foreground: 0 0% 0%;
-
-    --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 40%;
-
-    --accent: 0 0% 95%;
-    --accent-foreground: 0 0% 0%;
-
-    --destructive: 0 62.8% 65%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 0%;
-    --input: 0 0% 0%;
-    --ring: 0 0% 0%;
-
-    --chart-1: 0 0% 0%;
-    --chart-2: 0 0% 30%;
-    --chart-3: 0 0% 50%;
-    --chart-4: 0 0% 70%;
-    --chart-5: 0 0% 90%;
   }
 }
 

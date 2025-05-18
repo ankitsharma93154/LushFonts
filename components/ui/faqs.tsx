@@ -173,7 +173,7 @@ const FancyTextFAQ = () => {
   const isFavorite = (id: string) => favorites.includes(id);
 
   return (
-    <section className="py-16 pt-0 bg-gradient-to-r from-indigo-100 to-purple-100">
+    <section className=" bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 bg-size-200 animate-gradient-slow flex flex-col items-center justify-start p-6">
       <Head>
   <script
     type="application/ld+json"
@@ -182,7 +182,7 @@ const FancyTextFAQ = () => {
 </Head>
       <div className="max-w-5xl mx-auto px-4">
         <div className="text-center mb-10">
-          <h2 className="text-4xl font-extrabold mb-3 text-black">
+          <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-wide text-center drop-shadow-md mb-10 animate-fade-in pb-5">
             FAQs
           </h2>
           <p className="text-lg text-gray-600 mb-8">

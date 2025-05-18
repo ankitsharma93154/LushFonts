@@ -235,16 +235,12 @@ const additionalStyles = [
   
 ];
 
-// Precomputed examples for faster initial render
 const styleExamples = [
   '𝓣𝓱𝓲𝓼 𝓲𝓼 𝓯𝓪𝓷𝓬𝔂',
-  '🅂🅃🅈🄻🄸🅂🄷',
-  '𝙲𝚘𝚘𝚕 𝚃𝚎𝚡𝚝',
   'Ⓢⓣⓨⓛⓔ ⓟⓞⓟ',
   '𝔉𝔞𝔫𝔠𝔶 𝔖𝔠𝔯𝔦𝔭𝔱',
   '🅕🅐🅝🅒🅨 🅕🅞🅝🅣',
   '𝖌𝖔𝖙𝖍 𝖛𝖎𝖇𝖊𝖘',
-  '🅼🅰🆁🅺🅴🆃🅸🅽🅶',
   '𝓟𝓻𝓮𝓽𝓽𝔂 𝓒𝓾𝓻𝓵𝓼',
   '🄲🄻🄰🅂🅂🅈 🄻🄾🄾🄺'
 ];
@@ -416,7 +412,7 @@ const VariationsDialog = memo(({
   };
 
   return (
-    <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto bg-gradient-to-r from-indigo-100 to-purple-100">
+    <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 bg-size-200 ">
       <DialogHeader>
         <DialogTitle className="capitalize text-2xl mb-4">
           {style.replace(/_/g, ' ')} Variations
@@ -660,35 +656,9 @@ const VirtualizedStyleList = memo(({
   );
 });
 
-// OPTIMIZATION 5: Optimized welcome screen with reduced animations and simplified DOM
-const WelcomeScreen = memo(() => {
-  // Use a reduced set of examples for the welcome screen
-  const displayExamples = styleExamples.slice(0, 7);
-  
-  return (
-    <div className="flex flex-col items-center justify-center md:py-6 text-center">
-      <div className="text-3xl mb-4">✨📱✨</div>
-      <h2 className="text-xl sm:text-2xl font-bold mb-4">Make Your Text Stand Out</h2>
-      <p className="text-base sm:text-lg max-w-lg">
-        Transform text into fancy fonts for Instagram, TikTok, social media bios, and more!
-      </p>
-      <div className="flex py-6 px-4 flex-wrap gap-3 justify-center sm:max-w-[900px]">
-        {displayExamples.map((style, idx) => (
-          <div
-            key={idx}
-            className="bg-white text-black px-4 py-2 rounded shadow text-xl"
-          >
-            {style}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-});
-
-
 // OPTIMIZATION 6: Main component with better resource management
 export default function Home() {
+  // Set default input text to "welcome!"
   const [inputText, setInputText] = useState("");
   const [styles, setStyles] = useState<FontStyle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -709,6 +679,8 @@ export default function Home() {
     if (!hasInitializedRef.current) {
       fetchStyles();
       hasInitializedRef.current = true;
+      // Always load all styles since we now have default text
+      setLoadedAllStyles(true);
     }
     
     // Clean up the cache when component unmounts to prevent memory leaks
@@ -716,18 +688,6 @@ export default function Home() {
       transformTextCacheRef.current.clear();
     };
   }, []);
-  
-  // Only load additional styles when needed
-  useEffect(() => {
-    if (inputText.trim().length > 0 && !loadedAllStyles) {
-      // Delay loading to prevent UI blocking during typing
-      const timer = setTimeout(() => {
-        setLoadedAllStyles(true);
-      }, 300);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [inputText, loadedAllStyles]);
   
   // OPTIMIZATION 9: Better error handling for data fetching
   const fetchStyles = useCallback(async () => {
@@ -820,21 +780,16 @@ export default function Home() {
   // OPTIMIZATION 12: Better loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-100 to-purple-100">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 bg-size-200">
         <div className="text-2xl font-bold">Loading styles...</div>
       </div>
     );
   }
   
-  // Check if the input has actual content
-  const hasInputText = inputText.trim().length > 0;
-  
-  // OPTIMIZATION 13: Smart style list management
-  const displayedStyles = hasInputText 
-    ? loadedAllStyles 
-      ? [...commonStyles, ...additionalStyles]
-      : commonStyles
-    : [];
+  // OPTIMIZATION 13: Smart style list management - now we always show styles
+  const displayedStyles = loadedAllStyles 
+    ? [...commonStyles, ...additionalStyles]
+    : commonStyles;
   
   // OPTIMIZATION 14: Debounced input handling
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -845,10 +800,12 @@ export default function Home() {
   return (
     <>
       <ToastProvider>
-        <main className="min-h-screen py-8 px-2 bg-gradient-to-r from-indigo-100 to-purple-100 text-foreground">
-          <div className="container mx-auto p-4 md:p-6">
+        <main className=" bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 bg-size-200 animate-gradient-slow flex flex-col items-center justify-start p-6"
+>
+
+          <div className="container mx-auto p-2 md:p-6">
             <div className="max-w-4xl mx-auto mb-10 text-center">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-10">LushFonts - Fancy Text Generator</h1>
+              <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-wide text-center drop-shadow-md mb-10 animate-fade-in pb-5">LushFonts - Fancy Text Generator</h1>
               <Input
                 type="text"
                 value={inputText}
@@ -859,9 +816,7 @@ export default function Home() {
               />
             </div>
 
-            {!hasInputText ? (
-              <WelcomeScreen />
-            ) : (
+        {inputText &&
               <VirtualizedStyleList 
                 styles={displayedStyles}
                 inputText={inputText}
@@ -871,7 +826,24 @@ export default function Home() {
                 openDialogStyle={openDialogStyle}
                 setOpenDialogStyle={setOpenDialogStyle}
               />
-            )}
+          }
+
+          
+<div className="flex py-6 px-4 mx-auto my-5 flex-wrap gap-5 justify-center sm:max-w-[900px]">
+  {styleExamples.map((style, idx) => (
+    <div
+      key={idx}
+      className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white 
+                 text-base sm:text-lg md:text-xl 
+                 px-3 py-1.5 sm:px-5 sm:py-2 md:px-5 md:py-2.5 
+                 rounded shadow transition-all duration-200"
+    >
+      {style}
+    </div>
+  ))}
+</div>
+
+
           </div>
         </main>
 
@@ -893,7 +865,7 @@ export default function Home() {
       
       {/* OPTIMIZATION 15: Smarter lazy loading */}
       <Suspense fallback={<div className="h-16 bg-gradient-to-r from-indigo-100 to-purple-100"></div>}>
-        {hasInputText && <FancyTextFAQ />}
+        {<FancyTextFAQ />}
       </Suspense>
       <Suspense fallback={null}>
         <Footer />

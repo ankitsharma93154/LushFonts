@@ -14,6 +14,9 @@ const config: Config = {
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
+    backgroundSize: {
+      'size-200': '200% 200%',
+    },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
@@ -78,10 +81,16 @@ const config: Config = {
             height: '0',
           },
         },
+         gradientShift: {
+        '0%, 100%': { backgroundPosition: '0% 50%' },
+        '50%': { backgroundPosition: '100% 50%' },
+      },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+      'gradient-slow': 'gradientShift 15s ease infinite',
+  
       },
     },
   },
