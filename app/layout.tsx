@@ -79,15 +79,8 @@ export default function RootLayout({
         `}} />
 
         {/* Load render-blocking CSS non-blocking */}
-        <link
-  rel="preload"
-  href="https://www.lushfonts.site/_next/static/css/ce4ba38624950d33.css"
-  as="style"
-  onLoad={(e) => {
-    const link = e.currentTarget as HTMLLinkElement;
-    link.rel = 'stylesheet';
-  }}
-/>
+       <link rel="stylesheet" href="https://www.lushfonts.site/_next/static/css/ce4ba38624950d33.css" />
+
         <noscript>
           <link
             rel="stylesheet"
