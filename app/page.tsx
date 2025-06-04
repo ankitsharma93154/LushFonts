@@ -2,6 +2,7 @@
 
 import { useState, useEffect, lazy, Suspense, memo, useRef, useMemo, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { Analytics } from "@vercel/analytics/next"
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -800,6 +801,9 @@ export default function Home() {
   return (
     <>
       <ToastProvider>
+        <Analytics />
+        
+        {/* OPTIMIZATION 2: Use a gradient background with animation */}
         <main className=" bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 bg-size-200 animate-gradient-slow flex flex-col items-center justify-start p-6"
 >
 
