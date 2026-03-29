@@ -809,7 +809,11 @@ export default function Home() {
 
           <div className="container mx-auto p-2 md:p-6">
             <div className="max-w-4xl mx-auto mb-10 text-center">
-              <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-wide text-center drop-shadow-md mb-10 animate-fade-in pb-5">LushFonts - Fancy Text Generator</h1>
+              <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-wide text-center drop-shadow-md mb-10 animate-fade-in pb-5">Aesthetic Font Generator Keyboard</h1>
+              <p className="text-gray-700 text-base sm:text-lg mb-6">
+                Type with your normal keyboard, convert text into cool aesthetic fonts, and copy and paste in one click.
+                Jump to <a href="#aesthetic-text-styles" className="underline font-semibold">styles</a>, <a href="#aesthetic-text-layout" className="underline font-semibold">layouts</a>, or <a href="#aesthetic-text-templates" className="underline font-semibold">templates</a>.
+              </p>
               <Input
                 type="text"
                 value={inputText}
@@ -846,6 +850,49 @@ export default function Home() {
     </div>
   ))}
 </div>
+
+<section className="max-w-4xl mx-auto mt-12 bg-white/80 rounded-xl p-6 shadow-md" id="aesthetic-text-styles">
+  <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">Aesthetic Text Styles Library</h2>
+  <p className="text-gray-700 mb-4">
+    Explore aesthetic text styles for bios, usernames, captions, and chats. This generator includes script, gothic,
+    minimal, and decorative Unicode styles that are easy to copy and paste.
+  </p>
+  <h3 className="text-xl font-semibold mb-2 text-gray-900">Popular style categories</h3>
+  <ul className="list-disc pl-6 text-gray-700 space-y-1">
+    <li>Script and calligraphy for elegant bios</li>
+    <li>Bold and gothic styles for standout names</li>
+    <li>Minimal styles for clean profile text</li>
+    <li>Decorative styles for highlights and captions</li>
+  </ul>
+</section>
+
+<section className="max-w-4xl mx-auto mt-8 bg-white/80 rounded-xl p-6 shadow-md" id="aesthetic-text-layout">
+  <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">Aesthetic Text Layout Generator</h2>
+  <p className="text-gray-700 mb-4">
+    Build aesthetic text layouts with line breaks, symbols, and spacing. Use these layouts for Instagram bios,
+    highlight names, and caption openers.
+  </p>
+  <h3 className="text-xl font-semibold mb-2 text-gray-900">Quick layout ideas</h3>
+  <ul className="list-disc pl-6 text-gray-700 space-y-1">
+    <li>Soft bio layout: symbol + name + short mood line</li>
+    <li>Highlight title layout: one word + decorative border</li>
+    <li>Caption opener layout: style line + call to action</li>
+  </ul>
+</section>
+
+<section className="max-w-4xl mx-auto mt-8 bg-white/80 rounded-xl p-6 shadow-md" id="aesthetic-text-templates">
+  <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">Aesthetic Text Templates and Keyboard Tips</h2>
+  <p className="text-gray-700 mb-4">
+    Use these ready-to-copy templates and keyboard workflow tips to publish stylish text faster on iPhone, Android,
+    Instagram, TikTok, Discord, and WhatsApp.
+  </p>
+  <h3 className="text-xl font-semibold mb-2 text-gray-900">How to use with your keyboard</h3>
+  <ol className="list-decimal pl-6 text-gray-700 space-y-1">
+    <li>Type normal text in the generator input.</li>
+    <li>Pick a style that is readable on your target platform.</li>
+    <li>Copy and paste into your bio, username, caption, or message.</li>
+  </ol>
+</section>
 
 
           </div>

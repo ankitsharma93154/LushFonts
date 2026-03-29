@@ -8,23 +8,27 @@ import Script from 'next/script';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Cool & Aesthetic Text Generator – Copy & Paste',
-  description: 'Copy & paste cool text in seconds!. Generate fancy, stylish, and aesthetic fonts for Instagram, TikTok, Twitter bios & posts.',
+  title: 'Aesthetic Font Generator Keyboard | Copy and Paste Text Styles',
+  description: 'Type with your normal keyboard and instantly convert text into aesthetic fonts. Copy and paste styles for Instagram bios, TikTok captions, Discord names, and more.',
   keywords: [
-    'fancy fonts',
+    'aesthetic font generator keyboard',
+    'cool aesthetic fonts',
+    'aesthetic text layout',
+    'aesthetic text styles',
+    'aesthetic fonts for keyboard',
+    'aesthetic text templates',
     'font generator',
     'instagram fonts',
     'tiktok fonts',
-    'aesthetic text',
-    'Copy and paste',
+    'aesthetic text copy and paste',
   ],
   icons: {
     icon: '/favicon.ico',
   },
   metadataBase: new URL('https://www.lushfonts.site'),
   openGraph: {
-    title: 'LushFonts | Cool & Aesthetic Text Generator',
-    description: 'Generate fancy fonts for Instagram, TikTok, Twitter bios & posts. Copy & paste cool text in seconds!',
+    title: 'Aesthetic Font Generator Keyboard | LushFonts',
+    description: 'Generate cool aesthetic fonts, layouts, and text styles in one click. Copy and paste keyboard-friendly text for social apps.',
     url: 'https://www.lushfonts.site',
     siteName: 'LushFonts',
     images: [
@@ -39,8 +43,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'LushFonts | Cool & Aesthetic Text Generator',
-    description: 'Generate stylish fonts for Instagram, TikTok, Twitter bios & posts. Copy & paste in 1 click!',
+    title: 'Aesthetic Font Generator Keyboard | LushFonts',
+    description: 'Copy and paste aesthetic text styles instantly. Keyboard-friendly fonts for bios, usernames, captions, and messages.',
     images: ['/og-image.png'],
   },
   verification: {
@@ -118,6 +122,29 @@ export default function RootLayout({
               "target": "https://lushfonts.site/search?q={search_term_string}",
               "query-input": "required name=search_term_string",
             },
+          })}
+        </Script>
+
+        <Script id="software-app-schema" type="application/ld+json" strategy="afterInteractive">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "LushFonts Aesthetic Text Generator",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Web",
+            "url": "https://lushfonts.site",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD",
+            },
+            "description": "Keyboard-friendly aesthetic font generator with instant copy and paste text styles, layouts, and templates.",
+            "featureList": [
+              "Aesthetic font generator keyboard workflow",
+              "One-click copy and paste text",
+              "Aesthetic text layouts and templates",
+              "Unicode style library for social platforms"
+            ]
           })}
         </Script>
       </head>
