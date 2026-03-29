@@ -246,6 +246,44 @@ const styleExamples = [
   '🄲🄻🄰🅂🅂🅈 🄻🄾🄾🄺'
 ];
 
+const quickTemplates = [
+  {
+    label: 'Instagram Bio',
+    description: 'Clean and cute profile intro',
+    text: 'soft vibes only | dream in color',
+  },
+  {
+    label: 'Discord Name',
+    description: 'Stylish gamer-style identity',
+    text: 'midnight lotus',
+  },
+  {
+    label: 'TikTok Caption',
+    description: 'Short hook with personality',
+    text: 'main character energy today',
+  },
+  {
+    label: 'Highlight Title',
+    description: 'Aesthetic one-word category',
+    text: 'weekend diary',
+  },
+  {
+    label: 'Status Line',
+    description: 'Mood line for social apps',
+    text: 'offline but glowing',
+  },
+];
+
+const getStyleBadge = (style: string) => {
+  const normalized = style.toLowerCase();
+  if (normalized.includes('script') || normalized.includes('calligraphy')) return 'Elegant';
+  if (normalized.includes('fraktur') || normalized.includes('goth')) return 'Bold';
+  if (normalized.includes('circled') || normalized.includes('negative')) return 'Trendy';
+  if (normalized.includes('small') || normalized.includes('regular')) return 'Clean';
+  if (normalized.includes('glitch') || normalized.includes('symbol')) return 'Edgy';
+  return 'Popular';
+};
+
 // Define an interface for the new database structure
 interface FontStyle {
   style_id: number;
@@ -532,15 +570,33 @@ const StyleCard = memo(({
     onClickVariations();
   }, [onClickVariations]);
 
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopyWithFeedback = useCallback((e: React.MouseEvent) => {
+    handleCopy(e);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 1400);
+  }, [handleCopy]);
+
   return (
-    <Card className="p-4 border border-gray-200 hover:border-gray-400 transition-colors">
+    <Card className="p-4 border-2 border-purple-200 hover:border-purple-300 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg bg-white">
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-xs font-semibold tracking-wide uppercase text-indigo-700 bg-indigo-100/80 px-2 py-1 rounded-full">
+          {getStyleBadge(style)}
+        </span>
+        {isCopied && (
+          <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full animate-pulse">
+            Copied
+          </span>
+        )}
+      </div>
       <div className="flex justify-between items-center gap-2 mb-3">
         <p className="text-xl break-words whitespace-pre-wrap overflow-hidden w-full max-w-full">{transformedText}</p>
         <div className="flex justify-end items-center gap-2">
         <Button
           variant="outline"
           size="sm"
-          onClick={handleCopy}
+          onClick={handleCopyWithFeedback}
           className="h-8 w-8 p-0"
         >
           <Copy className="h-4 w-4" />
@@ -689,7 +745,7 @@ export default function Home() {
       transformTextCacheRef.current.clear();
     };
   }, []);
-  
+
   // OPTIMIZATION 9: Better error handling for data fetching
   const fetchStyles = useCallback(async () => {
     try {
@@ -777,6 +833,11 @@ export default function Home() {
       });
     }
   }, [copyToClipboard, toast]);
+
+  const applyTemplate = useCallback((template: string) => {
+    setInputText(template);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
   
   // OPTIMIZATION 12: Better loading state
   if (loading) {
@@ -804,15 +865,18 @@ export default function Home() {
         <Analytics />
         
         {/* OPTIMIZATION 2: Use a gradient background with animation */}
-        <main className=" bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 bg-size-200 animate-gradient-slow flex flex-col items-center justify-start p-6"
+        <main className="relative overflow-hidden bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 bg-size-200 animate-gradient-slow flex flex-col items-center justify-start p-6"
 >
+          <div className="pointer-events-none absolute -top-28 -left-20 h-64 w-64 rounded-full bg-pink-400/30 blur-3xl animate-pulse" />
+          <div className="pointer-events-none absolute top-20 -right-20 h-72 w-72 rounded-full bg-indigo-400/30 blur-3xl animate-pulse" />
+          <div className="pointer-events-none absolute top-80 left-1/3 h-56 w-56 rounded-full bg-purple-400/20 blur-3xl animate-pulse" />
 
-          <div className="container mx-auto p-2 md:p-6">
+          <div className="container mx-auto p-2 md:p-6 relative z-10">
             <div className="max-w-4xl mx-auto mb-10 text-center">
-              <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-wide text-center drop-shadow-md mb-10 animate-fade-in pb-5">Aesthetic Font Generator Keyboard</h1>
-              <p className="text-gray-700 text-base sm:text-lg mb-6">
+              <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-wide text-center drop-shadow-md mb-4 animate-fade-in pb-5">Aesthetic Font Generator Keyboard</h1>
+              <p className="text-slate-900 text-base sm:text-lg mb-6 leading-relaxed bg-white rounded-xl px-4 py-3 shadow-lg border-2 border-purple-300">
                 Type with your normal keyboard, convert text into cool aesthetic fonts, and copy and paste in one click.
-                Jump to <a href="#aesthetic-text-styles" className="underline font-semibold">styles</a>, <a href="#aesthetic-text-layout" className="underline font-semibold">layouts</a>, or <a href="#aesthetic-text-templates" className="underline font-semibold">templates</a>.
+                {' '}Jump to <a href="#aesthetic-text-styles" className="font-semibold text-indigo-700 hover:text-pink-600 transition-colors">styles</a>, <a href="#aesthetic-text-layout" className="font-semibold text-indigo-700 hover:text-pink-600 transition-colors">layouts</a>, or <a href="#aesthetic-text-templates" className="font-semibold text-indigo-700 hover:text-pink-600 transition-colors">templates</a>.
               </p>
               <Input
                 type="text"
@@ -841,24 +905,24 @@ export default function Home() {
   {styleExamples.map((style, idx) => (
     <div
       key={idx}
-      className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white 
-                 text-base sm:text-lg md:text-xl 
-                 px-3 py-1.5 sm:px-5 sm:py-2 md:px-5 md:py-2.5 
-                 rounded shadow transition-all duration-200"
+      className="bg-white text-slate-900 border border-purple-200
+             text-base sm:text-lg md:text-xl
+             px-3 py-1.5 sm:px-5 sm:py-2 md:px-5 md:py-2.5
+             rounded-lg shadow-sm transition-all duration-200"
     >
       {style}
     </div>
   ))}
 </div>
 
-<section className="max-w-4xl mx-auto mt-12 bg-white/80 rounded-xl p-6 shadow-md" id="aesthetic-text-styles">
-  <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">Aesthetic Text Styles Library</h2>
-  <p className="text-gray-700 mb-4">
+<section className="max-w-4xl mx-auto mt-12 bg-white/95 rounded-2xl p-6 sm:p-8 shadow-xl border border-purple-200" id="aesthetic-text-styles">
+  <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-2xl sm:text-3xl font-extrabold mb-4">Aesthetic Text Styles Library</h2>
+  <p className="text-slate-700 mb-4 text-base sm:text-lg leading-relaxed">
     Explore aesthetic text styles for bios, usernames, captions, and chats. This generator includes script, gothic,
     minimal, and decorative Unicode styles that are easy to copy and paste.
   </p>
-  <h3 className="text-xl font-semibold mb-2 text-gray-900">Popular style categories</h3>
-  <ul className="list-disc pl-6 text-gray-700 space-y-1">
+  <h3 className="text-xl font-bold mb-2 text-indigo-700">Popular style categories</h3>
+  <ul className="list-disc pl-6 text-slate-700 space-y-1 marker:text-pink-500">
     <li>Script and calligraphy for elegant bios</li>
     <li>Bold and gothic styles for standout names</li>
     <li>Minimal styles for clean profile text</li>
@@ -866,32 +930,56 @@ export default function Home() {
   </ul>
 </section>
 
-<section className="max-w-4xl mx-auto mt-8 bg-white/80 rounded-xl p-6 shadow-md" id="aesthetic-text-layout">
-  <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">Aesthetic Text Layout Generator</h2>
-  <p className="text-gray-700 mb-4">
+<section className="max-w-4xl mx-auto mt-8 bg-white/95 rounded-2xl p-6 sm:p-8 shadow-xl border border-purple-200" id="aesthetic-text-layout">
+  <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-2xl sm:text-3xl font-extrabold mb-4">Aesthetic Text Layout Generator</h2>
+  <p className="text-slate-700 mb-4 text-base sm:text-lg leading-relaxed">
     Build aesthetic text layouts with line breaks, symbols, and spacing. Use these layouts for Instagram bios,
     highlight names, and caption openers.
   </p>
-  <h3 className="text-xl font-semibold mb-2 text-gray-900">Quick layout ideas</h3>
-  <ul className="list-disc pl-6 text-gray-700 space-y-1">
+  <h3 className="text-xl font-bold mb-2 text-indigo-700">Quick layout ideas</h3>
+  <ul className="list-disc pl-6 text-slate-700 space-y-1 marker:text-pink-500">
     <li>Soft bio layout: symbol + name + short mood line</li>
     <li>Highlight title layout: one word + decorative border</li>
     <li>Caption opener layout: style line + call to action</li>
   </ul>
 </section>
 
-<section className="max-w-4xl mx-auto mt-8 bg-white/80 rounded-xl p-6 shadow-md" id="aesthetic-text-templates">
-  <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">Aesthetic Text Templates and Keyboard Tips</h2>
-  <p className="text-gray-700 mb-4">
+<section className="max-w-4xl mx-auto mt-8 bg-white/95 rounded-2xl p-6 sm:p-8 shadow-xl border border-purple-200" id="aesthetic-text-templates">
+  <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-2xl sm:text-3xl font-extrabold mb-4">Aesthetic Text Templates and Keyboard Tips</h2>
+  <p className="text-slate-700 mb-4 text-base sm:text-lg leading-relaxed">
     Use these ready-to-copy templates and keyboard workflow tips to publish stylish text faster on iPhone, Android,
     Instagram, TikTok, Discord, and WhatsApp.
   </p>
-  <h3 className="text-xl font-semibold mb-2 text-gray-900">How to use with your keyboard</h3>
-  <ol className="list-decimal pl-6 text-gray-700 space-y-1">
+  <h3 className="text-xl font-bold mb-2 text-indigo-700">How to use with your keyboard</h3>
+  <ol className="list-decimal pl-6 text-slate-700 space-y-1 marker:text-pink-500">
     <li>Type normal text in the generator input.</li>
     <li>Pick a style that is readable on your target platform.</li>
     <li>Copy and paste into your bio, username, caption, or message.</li>
   </ol>
+
+  <div className="mt-6">
+    <h3 className="text-xl font-bold mb-3 text-indigo-700">Swipe and apply quick templates</h3>
+    <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
+      {quickTemplates.map((template) => (
+        <Card
+          key={template.label}
+          className="min-w-[260px] sm:min-w-[300px] snap-start bg-white border border-purple-200 shadow-md hover:shadow-xl transition-shadow"
+        >
+          <div className="p-4">
+            <p className="text-xs uppercase tracking-wide font-bold text-pink-600 mb-1">{template.label}</p>
+            <p className="text-sm text-slate-600 mb-3">{template.description}</p>
+            <p className="text-lg font-semibold text-slate-800 mb-4">{template.text}</p>
+            <Button
+              onClick={() => applyTemplate(template.text)}
+              className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white hover:opacity-90"
+            >
+              Apply Template
+            </Button>
+          </div>
+        </Card>
+      ))}
+    </div>
+  </div>
 </section>
 
 
